@@ -1,0 +1,66 @@
+C51 COMPILER V9.53.0.0   CSLIB_CONFIG                                                      07/10/2017 21:21:10 PAGE 1   
+
+
+C51 COMPILER V9.53.0.0, COMPILATION OF MODULE CSLIB_CONFIG
+OBJECT MODULE PLACED IN .\lib\cslib\application_layer\cslib_config.OBJ
+COMPILER INVOKED BY: c:\SiliconLabs\SimplicityStudio\v4\developer\toolchains\keil_8051\9.53\BIN\C51.exe C:\Users\kburzin
+                    -ski\SimplicityStudio\v4_workspace\BoldportTouchyAPIDemo\lib\cslib\application_layer\cslib_config.c OMF2 SMALL DEBUG OBJE
+                    -CTEXTEND ROM(LARGE) WARNINGLEVEL(2) FLOATFUZZY(3) OPTIMIZE(8,SPEED) DEFINE(DEBUG=1) INTVECTOR(0X0000) INTPROMOTE INCDIR(
+                    -C:\Users\kburzinski\SimplicityStudio\v4_workspace\BoldportTouchyAPIDemo\inc\config;C:/Users/kburzinski/SimplicityStudio/
+                    -v4_workspace/BoldportTouchyAPIDemo/inc;C:/SiliconLabs/SimplicityStudio/v4/developer/sdks/8051/v4.0.4//Device/shared/si80
+                    -51base;C:/SiliconLabs/SimplicityStudio/v4/developer/sdks/8051/v4.0.4//Device/EFM8SB1/inc;C:/SiliconLabs/SimplicityStudio
+                    -/v4/developer/sdks/8051/v4.0.4//Lib/efm8_capsense;C:/SiliconLabs/SimplicityStudio/v4/developer/sdks/8051/v4.0.4//Device/
+                    -EFM8SB1/efm8_capsense/device_layer) PRINT(.\lib\cslib\application_layer\cslib_config.lst) COND PAGEWIDTH(120) PAGELENGTH
+                    -(65) OBJECT(.\lib\cslib\application_layer\cslib_config.OBJ)
+
+line level    source
+
+   1          
+   2          #include "cslib_config.h"
+   3          #include "cslib.h"
+   4          #include <si_toolchain.h>             // compiler declarations
+   5          
+   6          
+   7          
+   8          // Struct defined in sensor_node_routines.h.  Contains all state data for a
+   9          // sensor.
+  10          SI_SEGMENT_VARIABLE (CSLIB_node[DEF_NUM_SENSORS], SensorStruct_t, SI_SEG_XDATA);
+  11          
+  12          SI_SEGMENT_VARIABLE (CSLIB_numSensors, uint8_t, SI_SEG_DATA)                        = DEF_NUM_SENSORS;
+  13          SI_SEGMENT_VARIABLE (CSLIB_sensorBufferSize, uint8_t, SI_SEG_DATA)                  = DEF_SENSOR_BUFFER_SI
+             -ZE;
+  14          SI_SEGMENT_VARIABLE (CSLIB_singleCSLIB_activeSensorDelta, uint16_t, SI_SEG_DATA)          = DEF_SINGLE_ACT
+             -IVE_SENSOR_DELTA;
+  15          SI_SEGMENT_VARIABLE (CSLIB_buttonDebounce, uint8_t, SI_SEG_DATA)                    = DEF_BUTTON_DEBOUNCE;
+  16          SI_SEGMENT_VARIABLE (CSLIB_activeModePeriod, uint16_t, SI_SEG_DATA)              = DEF_ACTIVE_MODE_PERIOD;
+  17          SI_SEGMENT_VARIABLE (CSLIB_sleepModePeriod, uint16_t, SI_SEG_DATA)               = DEF_SLEEP_MODE_PERIOD;
+  18          SI_SEGMENT_VARIABLE (CSLIB_countsBeforeSleep, uint16_t, SI_SEG_DATA)                = DEF_COUNTS_BEFORE_SL
+             -EEP;
+  19          SI_SEGMENT_VARIABLE (CSLIB_freeRunSetting, uint8_t, SI_SEG_DATA)                    = DEF_FREE_RUN_SETTING
+             -;
+  20          SI_SEGMENT_VARIABLE (CSLIB_sleepModeEnable, uint8_t, SI_SEG_DATA)                   = DEF_SLEEP_MODE_ENABL
+             -E;
+  21          SI_SEGMENT_VARIABLE (CSLIB_activeSensorDelta, uint16_t, SI_SEG_DATA)                = DEF_ACTIVE_SENSOR_DE
+             -LTA;
+  22          SI_SEGMENT_VARIABLE (CSLIB_inactiveSensorDelta, uint16_t, SI_SEG_DATA)              = DEF_INACTIVE_SENSOR_
+             -DELTA;
+  23          SI_SEGMENT_VARIABLE (CSLIB_averageTouchDelta, uint16_t, SI_SEG_DATA)                = DEF_AVERAGE_TOUCH_DE
+             -LTA;
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   ----    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =    162    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     19    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

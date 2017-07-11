@@ -1,0 +1,379 @@
+C51 COMPILER V9.53.0.0   COMM_ROUTINES                                                     07/10/2017 21:21:06 PAGE 1   
+
+
+C51 COMPILER V9.53.0.0, COMPILATION OF MODULE COMM_ROUTINES
+OBJECT MODULE PLACED IN .\lib\efm8sb1\cslib\serial_interface\comm_routines.OBJ
+COMPILER INVOKED BY: c:\SiliconLabs\SimplicityStudio\v4\developer\toolchains\keil_8051\9.53\BIN\C51.exe C:\Users\kburzin
+                    -ski\SimplicityStudio\v4_workspace\BoldportTouchyAPIDemo\lib\efm8sb1\cslib\serial_interface\comm_routines.c OMF2 SMALL DE
+                    -BUG OBJECTEXTEND ROM(LARGE) WARNINGLEVEL(2) FLOATFUZZY(3) OPTIMIZE(8,SPEED) DEFINE(DEBUG=1) INTVECTOR(0X0000) INTPROMOTE
+                    - INCDIR(C:\Users\kburzinski\SimplicityStudio\v4_workspace\BoldportTouchyAPIDemo\inc\config;C:/Users/kburzinski/Simplicit
+                    -yStudio/v4_workspace/BoldportTouchyAPIDemo/inc;C:/SiliconLabs/SimplicityStudio/v4/developer/sdks/8051/v4.0.4//Device/sha
+                    -red/si8051base;C:/SiliconLabs/SimplicityStudio/v4/developer/sdks/8051/v4.0.4//Device/EFM8SB1/inc;C:/SiliconLabs/Simplici
+                    -tyStudio/v4/developer/sdks/8051/v4.0.4//Lib/efm8_capsense;C:/SiliconLabs/SimplicityStudio/v4/developer/sdks/8051/v4.0.4/
+                    -/Device/EFM8SB1/efm8_capsense/device_layer) PRINT(.\lib\efm8sb1\cslib\serial_interface\comm_routines.lst) COND PAGEWIDTH
+                    -(120) PAGELENGTH(65) OBJECT(.\lib\efm8sb1\cslib\serial_interface\comm_routines.OBJ)
+
+line level    source
+
+   1          /**************************************************************************//**
+   2           * Copyright (c) 2015 by Silicon Laboratories Inc. All rights reserved.
+   3           *
+   4           * http://developer.silabs.com/legal/version/v11/Silicon_Labs_Software_License_Agreement.txt
+   5           *****************************************************************************/
+   6          
+   7          #include <si_toolchain.h>
+   8          #include "comm_routines.h"
+   9          
+  10          #include <stdio.h>
+  11          #include <stdlib.h>
+  12          #include "SI_EFM8SB1_Defs.h"
+  13          
+  14          
+  15          //-----------------------------------------------------------------------------
+  16          // Local variables and macros
+  17          //-----------------------------------------------------------------------------
+  18          // NOTE: Calls to serial interface transfers using these buffers as 
+  19          // parameters must size data appropriately or increase the buffer sizes defined
+  20          // below.
+  21          idata uint8_t bufferU8[10];
+  22          idata uint16_t bufferU16[10];
+  23          
+  24          
+  25          volatile uint16_t printBase;
+  26          volatile uint16_t printSize;
+  27          volatile uint16_t printCount;
+  28          
+  29          //-----------------------------------------------------------------------------
+  30          // Local function prototypes
+  31          //-----------------------------------------------------------------------------
+  32          
+  33          void UART0_init(void);
+  34          char getChar (void);
+  35          uint16_t getU8(void);
+  36          /*
+  37          //-----------------------------------------------------------------------------
+  38          // OutputU8
+  39          //-----------------------------------------------------------------------------
+  40          //
+  41          // Function can return a byte if the serial interface
+  42          // has the potential for arbitration issues.  This implementation always returns 1.
+  43          // Function outputs a buffer of 1-byte values.  If INCLUDE_SPACES is set in the
+  44          // <transmitconfig> parameter, one space is added between bytes.
+  45          uint8_t OutputU8(uint8_t* buffer, uint8_t length, uint8_t transmitconfig)
+  46          {
+  47             uint8_t index;
+  48          
+C51 COMPILER V9.53.0.0   COMM_ROUTINES                                                     07/10/2017 21:21:06 PAGE 2   
+
+  49             for(index = 0; index < length; index++)
+  50             {
+  51                printf("%bd", buffer[index]);
+  52                if(transmitconfig & INCLUDE_SPACES)
+  53                   printf(" ");
+  54             }
+  55          
+  56             return 1;
+  57          }
+  58          
+  59          
+  60          
+  61          //-----------------------------------------------------------------------------
+  62          // OutputU16
+  63          //-----------------------------------------------------------------------------
+  64          //
+  65          // Function outputs a buffer of 2-byte values.  If INCLUDE_SPACES is set in the
+  66          // <transmitconfig> parameter, one space is added between bytes.
+  67          // Function can return a byte if the serial interface
+  68          // has the potential for arbitration issues.  This implementation always returns 1.
+  69          uint8_t OutputU16(uint16_t* buffer, uint8_t length, uint8_t transmitconfig)
+  70          {
+  71             uint8_t index;
+  72          
+  73             for(index = 0; index < length; index++)
+  74             {
+  75                printf("%u", buffer[index]);
+  76                if(transmitconfig & INCLUDE_SPACES)
+  77                   printf(" ");
+  78             }
+  79          
+  80             return 1;
+  81          }
+  82          
+  83          
+  84          
+  85          //-----------------------------------------------------------------------------
+  86          // OutputString
+  87          //-----------------------------------------------------------------------------
+  88          //
+  89          // Function outputs a string.  Function can return a byte if the serial interface
+  90          // has the potential for arbitration issues.  This implementation always returns 1.
+  91          uint8_t OutputString(uint8_t* buffer)
+  92          {
+  93             printf("%s",buffer);
+  94          
+  95             return 1;
+  96          }
+  97          
+  98          */
+  99          //-----------------------------------------------------------------------------
+ 100          // getChar
+ 101          //-----------------------------------------------------------------------------
+ 102          //
+ 103          // Low-level getChar replacement routine.  Reads one byte from UART and
+ 104          // returns that byte.
+ 105          //
+ 106          char getChar (void)
+ 107          {
+ 108   1        char c;  
+ 109   1      
+ 110   1        while (!SCON0_RI);
+ 111   1        SCON0_RI = 0;
+C51 COMPILER V9.53.0.0   COMM_ROUTINES                                                     07/10/2017 21:21:06 PAGE 3   
+
+ 112   1        c = SBUF0;
+ 113   1        return c;
+ 114   1      }
+ 115          
+ 116          
+ 117          //-----------------------------------------------------------------------------
+ 118          // getU16
+ 119          //-----------------------------------------------------------------------------
+ 120          //
+ 121          // Routine that reads a 2-byte unsigned integer using the low-level
+ 122          // getChar() routine.  This function excepts data in decimal format and
+ 123          // expects data to be delimited by space (' ') characters.
+ 124          //
+ 125          uint16_t getU16(void)
+ 126          {
+ 127   1         uint8_t character;
+ 128   1         uint16_t output = 0;
+ 129   1         do
+ 130   1         {
+ 131   2            character = getChar();
+ 132   2         }
+ 133   1         while((character <= '0') || (character >= '9'));
+ 134   1         
+ 135   1         do
+ 136   1         {
+ 137   2            output = output * 10 + character - '0';
+ 138   2            character = getChar();
+ 139   2            
+ 140   2         }
+ 141   1         while((character >= '0') && (character <= '9'));
+ 142   1         
+ 143   1         return output;
+ 144   1         
+ 145   1      
+ 146   1      }
+ 147          
+ 148          uint16_t getU8(void)
+ 149          {
+ 150   1         uint8_t character;
+ 151   1         uint16_t output = 0;
+ 152   1      
+ 153   1         character = getChar();
+ 154   1         
+ 155   1         return output;
+ 156   1         
+ 157   1      
+ 158   1      }
+ 159          
+ 160          //-----------------------------------------------------------------------------
+ 161          // Comm_Init
+ 162          //-----------------------------------------------------------------------------
+ 163          //
+ 164          // Function should configure all non-port pin resources dedicated to the serial
+ 165          // interface.  Shared resources such as port pin configuration should
+ 166          // be handled in DeviceInit.c.
+ 167          // Function is called in the systemInit routine inside DeviceInit.c
+ 168          void CSLIB_commInit(void)
+ 169          {
+ 170   1         UART0_init();
+ 171   1      
+ 172   1         P0MDOUT |= 0x10;                    // Enable UTX as push-pull output
+ 173   1         XBR0    = 0x01;                     // Enable UART on P0.4(TX) and P0.5(RX)
+ 174   1         XBR2    = 0x40;                     // Enable crossbar and weak pull-ups
+C51 COMPILER V9.53.0.0   COMM_ROUTINES                                                     07/10/2017 21:21:06 PAGE 4   
+
+ 175   1      
+ 176   1      
+ 177   1      
+ 178   1      }
+ 179          
+ 180          //-----------------------------------------------------------------------------
+ 181          // UART0_init
+ 182          //-----------------------------------------------------------------------------
+ 183          //
+ 184          // Return Value : None
+ 185          // Parameters   : None
+ 186          //
+ 187          // Configure the UART0 using Timer1, for <BAUDRATE> and 8-N-1.
+ 188          //-----------------------------------------------------------------------------
+ 189          
+ 190          void UART0_init ()
+ 191          {
+ 192   1         SCON0 = 0x10;                       // SCON0: 8-bit variable bit rate
+ 193   1                                             //        level of STOP bit is ignored
+ 194   1                                             //        RX enabled
+ 195   1                                             //        ninth bits are zeros
+ 196   1                                             //        clear RI0 and TI0 bits
+ 197   1         #if (UART_SYSCLK/UART_BAUDRATE/2/256 < 1)
+ 198   1            TH1 = -(UART_SYSCLK/UART_BAUDRATE/2);
+ 199   1            CKCON0 &= ~0x0B;                  // T1M = 1; SCA1:0 = xx
+ 200   1            CKCON0 |=  0x08;
+ 201   1         #elif (UART_SYSCLK/UART_BAUDRATE/2/256 < 4)
+                    TH1 = -(UART_SYSCLK/UART_BAUDRATE/2/4);
+                    CKCON &= ~0x0B;                  // T1M = 0; SCA1:0 = 01
+                    CKCON |=  0x01;
+                 #elif (UART_SYSCLK/UART_BAUDRATE/2/256 < 12)
+                    TH1 = -(UART_SYSCLK/UART_BAUDRATE/2/12);
+                    CKCON &= ~0x0B;                  // T1M = 0; SCA1:0 = 00
+                 #else
+                    TH1 = -(UART_SYSCLK/UART_BAUDRATE/2/48);
+                    CKCON &= ~0x0B;                  // T1M = 0; SCA1:0 = 10
+                    CKCON |=  0x02;
+                 #endif
+ 213   1      
+ 214   1         TL1 = TH1;                          // Init Timer1
+ 215   1         TMOD &= ~0xf0;                      // TMOD: timer 1 in 8-bit autoreload
+ 216   1         TMOD |=  0x20;
+ 217   1         TCON_TR1 = 1;                            // START Timer1
+ 218   1         SCON0_TI = 1;                            // Indicate TX0 ready
+ 219   1      
+ 220   1      }
+ 221          
+ 222          
+ 223          void outputHeaderCount(HeaderStruct_t headerEntry)
+ 224          {
+ 225   1         uint8_t index;
+ 226   1         if(headerEntry.instances > 1)
+ 227   1            for(index = 0; index < headerEntry.instances; index++)
+ 228   1            {
+ 229   2               printf("%s_%bd ", headerEntry.header,index);
+ 230   2            }
+ 231   1         else
+ 232   1            printf("%s ", headerEntry.header);
+ 233   1      }
+ 234          void outputBreak(void)
+ 235          {
+ 236   1         printf(" | ");
+ 237   1      }
+C51 COMPILER V9.53.0.0   COMM_ROUTINES                                                     07/10/2017 21:21:06 PAGE 5   
+
+ 238          
+ 239          void outputBeginHeader(void)
+ 240          {
+ 241   1         printf("*HEADER ");
+ 242   1      }
+ 243          
+ 244          void outputNewLine(void)
+ 245          {
+ 246   1         printf("\n");
+ 247   1      }
+ 248          
+ 249          void printOutputSingAct(uint16_t offset, uint8_t bytes)
+ 250          {
+ 251   1              volatile uint8_t index, output;
+ 252   1              uint8_t xdata *ptr;
+ 253   1                 //*((char code *) 0x8000)
+ 254   1              (0, bytes); // unreferenced variable
+ 255   1      
+ 256   1                 ptr = ((uint8_t xdata *)(printBase + offset));
+ 257   1      
+ 258   1                 for(index = 0; index < printCount; index++)
+ 259   1                 {
+ 260   2      
+ 261   2                       output = *ptr;
+ 262   2                       if(output & 0x40)
+ 263   2                       {
+ 264   3                               printf("1 ");
+ 265   3                       }
+ 266   2                       else
+ 267   2                       {
+ 268   3                               printf("0 ");
+ 269   3                       }
+ 270   2                       ptr = ptr + printSize;
+ 271   2                 }
+ 272   1      
+ 273   1      }
+ 274          void printOutputDebAct(uint16_t offset, uint8_t bytes)
+ 275          {
+ 276   1              volatile uint8_t index, output;
+ 277   1              uint8_t xdata *ptr;
+ 278   1                 //*((char code *) 0x8000)
+ 279   1        (0, bytes); // unreferenced variable
+ 280   1      
+ 281   1                 ptr = ((uint8_t xdata *)(printBase + offset));
+ 282   1      
+ 283   1                 for(index = 0; index < printCount; index++)
+ 284   1                 {
+ 285   2      
+ 286   2                       output = *ptr;
+ 287   2                       if(output & 0x80)
+ 288   2                       {
+ 289   3                               printf("1 ");
+ 290   3                       }
+ 291   2                       else
+ 292   2                       {
+ 293   3                               printf("0 ");
+ 294   3                       }
+ 295   2                       ptr = ptr + printSize;
+ 296   2                 }
+ 297   1      
+ 298   1      }
+ 299          
+ 300          void printOutputTDelta(uint16_t offset, uint8_t bytes)
+C51 COMPILER V9.53.0.0   COMM_ROUTINES                                                     07/10/2017 21:21:06 PAGE 6   
+
+ 301          {
+ 302   1              uint8_t index;
+ 303   1              uint8_t xdata *ptr;
+ 304   1        (0, bytes); // unreferenced variable
+ 305   1      
+ 306   1              ptr = ((uint8_t xdata *)(printBase + offset));
+ 307   1                 for(index = 0; index < printCount; index++)
+ 308   1                 {
+ 309   2      
+ 310   2                    printf("%u ", *(uint16_t*)ptr * 4);
+ 311   2      
+ 312   2                    ptr = ptr + printSize;
+ 313   2                 }
+ 314   1      }
+ 315          
+ 316          void printOutput(uint16_t offset, uint8_t bytes)
+ 317          {
+ 318   1         uint8_t index;
+ 319   1         //*((char code *) 0x8000)
+ 320   1         uint8_t xdata *ptr;
+ 321   1         ptr = ((uint8_t xdata *)(printBase + offset));
+ 322   1      
+ 323   1         for(index = 0; index < printCount; index++)
+ 324   1         {
+ 325   2            if(bytes == 2)
+ 326   2            {
+ 327   3               printf("%u ", *(uint16_t*)ptr);
+ 328   3            }
+ 329   2            else if(bytes == 1)
+ 330   2               printf("%bd ", *ptr);
+ 331   2      
+ 332   2            ptr = ptr + printSize;
+ 333   2         }
+ 334   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    524    ----
+   CONSTANT SIZE    =     42    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      6      24
+   IDATA SIZE       =     30    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
