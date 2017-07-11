@@ -9,7 +9,7 @@ The API was later written by Keith Burzinski @kbx81 kbx81x@gmail.com
 
 ## Project Page
 
-The original project page can be found at http://www.hashdefineelectronics.com/boldport-project-7-touchy/
+The original project firmware page can be found at http://www.hashdefineelectronics.com/boldport-project-7-touchy/
 
 ## Setup
 
