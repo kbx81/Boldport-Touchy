@@ -52,7 +52,7 @@ This will bring the project into Simplicity Studio where you can modify as you w
 
 ## Other thoughts/things/stuff
 
-<p>Getting Ronald's original "Simple" project working was a challenge. It wouldn't surprise me if, after a few months, getting
+<p>Getting Ronald's original "Simple" project working was a challenge; this was not because he did a bad job creating it, but moreso because of some challenges I had with Simplicity Studio. It wouldn't surprise me if, after a few months, getting
  this one working again proves difficult, as well. That said, this project was quite fun to work with and write.</p>
 <p>Please note that it will be necessary to acquire a license for the Keil compiler included with Simplicity Studio. The
  license is free but does require one to roll through the registration process. Click on the "Help" menu, then select
