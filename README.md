@@ -2,6 +2,10 @@
 
 Here you'll find a simple API written for Boldport project number 7 aka Touchy. The kit is based on an EFM8SB1 aka "Sleepy Bee" microcontroller. Be sure to check out the offical project page at https://www.boldport.com/products/touchy and be sure to sign up for the club at https://boldport.club - it's very much worth it!
 
+## What's new/different?
+
+This verion of the firmware adds quite a few capabilities over what the original "Simple" firmware did. First--and arguably most importantly--this firmware enables the microcontroller to properly sleep, which should preserve the life of the small button battery for a much longer period of time. The code was present in the original firmware but the feature was not enabled in the capsense library so, while the call was happening, the library wouldn't act on it, preventing the microcontroller from sleeping when it was idle. This behavior can be observed in this firmwire when, after about five seconds of no activity, the LEDs all simply turn off. Touching any sensor wakes the device and the LEDs will be restored to their previous state. In addition, two timers are now used to generate two independent PWM signals so that LEDs one and six (the outer two) can both be "dimmed". LEDs two through five can be toggled on and off with their respective buttons, while LEDs one and six are set to "opposite" intensities with the circle slider. Buttons one and six do something special...try them and find out what it is!
+
 ## Authors
 
 The board's orignal firmware was written by Ronald Sousa @Opticalworm - @HashDefineElec - www.hashdefineelectronics.com<br />
