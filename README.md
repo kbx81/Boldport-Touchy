@@ -1,6 +1,6 @@
 # Boldport Touchy API Demo firmware
 
-Here you'll find a simple API written for Boldport project number 7 aka Touchy. The kit is based on an EFM8SB1 aka "Sleepy Bee" microcontroller.
+Here you'll find a simple API written for Boldport project number 7 aka Touchy. The kit is based on an EFM8SB1 aka "Sleepy Bee" microcontroller. Be sure to check out the offical project page at https://www.boldport.com/products/touchy and be sure to sign up for the club at https://boldport.club - it's very much worth it!
 
 ## Authors
 
