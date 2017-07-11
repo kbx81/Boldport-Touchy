@@ -11,8 +11,9 @@ This verion of the firmware adds quite a few capabilities over what the original
 The board's orignal firmware was written by Ronald Sousa @Opticalworm - @HashDefineElec - www.hashdefineelectronics.com<br />
 The API was later written by Keith Burzinski @kbx81 kbx81x@gmail.com
 
-## Project Page
+## Project Pages
 
+The offical product/project homepage is at https://www.boldport.com/products/touchy
 The original project firmware page can be found at http://www.hashdefineelectronics.com/boldport-project-7-touchy/
 
 ## Setup
