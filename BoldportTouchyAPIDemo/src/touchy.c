@@ -256,11 +256,10 @@ void TouchyButtonRefresh(void)
 		sleepCounter = 0;
 	}
 
+	previousAngle = angle;
 	// Check if sum of sensors is above a minimum threshold for better touch release behavior
 	if (IsTouchQualified())
 	{
-		previousAngle = angle;
-
 		// Perform the centroid algorithm to determine the wheel angle position
 		// (0 degrees is 12 o'clock, 90 degrees is 3 o'clock)
 		angle = CalculatePosition();
