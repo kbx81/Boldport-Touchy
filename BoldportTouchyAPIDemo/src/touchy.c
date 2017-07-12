@@ -20,8 +20,14 @@ SI_SBIT (LED4pin, SFR_P1, 7);
 SI_SBIT (LED5pin, SFR_P1, 0);
 SI_SBIT (LED6pin, SFR_P0, 7);
 
-static volatile uint8_t ledState = 0, intensity1 = 0, intensity2 = 0, buttonState = 0, previousButtonState = 0, buttonsChanged = 0, sleepCounter = 0;
-static volatile uint16_t angle = 0, previousAngle = 0;
+static uint16_t angle = 0, previousAngle = 0;
+static uint8_t ledState = 0, buttonState = 0, previousButtonState = 0, buttonsChanged = 0, sleepCounter = 0;
+#ifdef DIMMER1
+static uint8_t intensity1 = 0;
+#endif
+#ifdef DIMMER2
+static uint8_t intensity2 = 0;
+#endif
 
 
 uint8_t TouchyReadLEDs(void)
@@ -38,6 +44,21 @@ void TouchySetLEDs(uint8_t leds)
 	// Update the saved state of all LEDs with the requested changes.
 	ledState = leds;
 
+#ifdef DIMMER1
+	intensity1 = 0;
+
+	if (leds & LED1) {
+		intensity1 = 255;
+	}
+#endif
+#ifdef DIMMER2
+	intensity2 = 0;
+
+	if (leds & LED6) {
+		intensity2 = 255;
+	}
+#endif
+
 	TouchyLEDRefresh();
 }
 
@@ -47,6 +68,16 @@ void TouchyLEDOff(uint8_t leds)
 	// Update the saved state of all LEDs with the requested changes
 	ledState &= ~leds;
 
+#ifdef DIMMER1
+	if (leds & LED1) {
+		intensity1 = 0;
+	}
+#endif
+#ifdef DIMMER2
+	if (leds & LED6) {
+		intensity2 = 0;
+	}
+#endif
 	TouchyLEDRefresh();
 }
 
@@ -59,6 +90,16 @@ void TouchyLEDOn(uint8_t leds)
 	// Update the saved state of all LEDs with the requested changes
 	ledState |= leds;
 
+#ifdef DIMMER1
+	if (leds & LED1) {
+		intensity1 = 255;
+	}
+#endif
+#ifdef DIMMER2
+	if (leds & LED6) {
+		intensity2 = 255;
+	}
+#endif
 	TouchyLEDRefresh();
 }
 
@@ -71,30 +112,58 @@ void TouchyLEDToggle(uint8_t leds)
 	// Update the saved state of all LEDs with the requested changes
 	ledState = (~ledState & leds) | (ledState & ~leds);
 
+#ifdef DIMMER1
+	if (leds & LED1) {
+		intensity1 = 255 - intensity1;
+	}
+#endif
+#ifdef DIMMER2
+	if (leds & LED6) {
+		intensity2 = 255 - intensity2;
+	}
+#endif
 	TouchyLEDRefresh();
 }
 
 
 void TouchySetLEDIntensity(uint8_t leds, uint8_t intensity)
 {
+#ifdef DIMMER1
 	if (leds & LED1)
 	{
 		intensity1 = intensity;
+
+		if (intensity) {
+			ledState |= LED1;
+		}
+		else {
+			ledState &= ~LED1;
+		}
+
 		if (intensity == 255)
 		{
 			PCA0CPM0 &= ~PCA0CPM0_ECOM__ENABLED;
 		}
 	}
-
+#endif
+#ifdef DIMMER2
 	if (leds & LED6)
 	{
 		intensity2 = intensity;
+
+		if (intensity) {
+			ledState |= LED6;
+		}
+		else {
+			ledState &= ~LED6;
+		}
+
 		if (intensity == 255)
 		{
 			PCA0CPM1 &= ~PCA0CPM1_ECOM__ENABLED;
 		}
 	}
-
+#endif
 	TouchyLEDRefresh();
 }
 
@@ -103,16 +172,18 @@ uint8_t TouchyReadLEDIntensity(uint8_t leds)
 {
 	uint8_t intensity = 0;
 
+#ifdef DIMMER1
 	if (leds & LED1)
 	{
 		intensity = intensity1;
 	}
-
+#endif
+#ifdef DIMMER2
 	if (leds & LED6)
 	{
 		intensity = intensity2;
 	}
-
+#endif
 	return intensity;
 }
 
@@ -120,7 +191,13 @@ uint8_t TouchyReadLEDIntensity(uint8_t leds)
 void TouchySleepLEDs(void)
 {
 	LED1pin = LED2pin = LED3pin = LED4pin = LED5pin = LED6pin = true;
-	PCA0CPH0 = PCA0CPH1 = 0;
+
+#ifdef DIMMER1
+	DIMMER1 = 0;
+#endif
+#ifdef DIMMER2
+	DIMMER2 = 0;
+#endif
 
 	return;
 }
@@ -135,8 +212,12 @@ void TouchyLEDRefresh(void)
 	LED5pin = !((ledState >> 4) & 0x01);
 	LED6pin = !((ledState >> 5) & 0x01);
 
-	PCA0CPH0 = intensity1;
-	PCA0CPH1 = intensity2;
+#ifdef DIMMER1
+	DIMMER1 = intensity1;
+#endif
+#ifdef DIMMER2
+	DIMMER2 = intensity2;
+#endif
 }
 
 
@@ -218,6 +299,21 @@ uint8_t TouchyGetReleasedButtons(void)
 uint16_t TouchyReadSlider(void)
 {
 	return angle;
+}
+
+
+int16_t TouchyReadSliderRelative(void)
+{
+	if (angle - previousAngle > 180)
+	{
+		return angle - previousAngle - 360;
+	}
+
+	if (previousAngle - angle > 180) {
+		return angle - previousAngle + 360;
+	}
+
+	return angle - previousAngle;
 }
 
 

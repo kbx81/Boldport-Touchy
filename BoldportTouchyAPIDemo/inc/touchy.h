@@ -8,6 +8,12 @@
 #define INC_TOUCHY_H_
 
 /**
+ * define PWM channel registers to be used as "dimmers"
+ */
+#define DIMMER1 PCA0CPH0
+#define DIMMER2 PCA0CPH1
+
+/**
  * define LED bits used for the API
  */
 #define LED_COUNT  6
@@ -114,6 +120,10 @@ uint8_t TouchyGetReleasedButtons(void);
 /*! \brief Returns the angle of Touchy's circle slider (0 degrees is 12 o'clock, 90 degrees is 3 o'clock, etc.)
  */
 uint16_t TouchyReadSlider(void);
+
+/*! \brief Returns the relative change of Touchy's circle slider; clockwise = positive, counter-clockwise = negative
+ */
+int16_t TouchyReadSliderRelative(void);
 
 /*! \brief Returns true if Touchy should sleep now (based on lack of activity on touch sensors)
  */

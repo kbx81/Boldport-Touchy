@@ -1,4 +1,4 @@
-C51 COMPILER V9.53.0.0   MAIN                                                              07/10/2017 21:21:03 PAGE 1   
+C51 COMPILER V9.53.0.0   MAIN                                                              07/11/2017 21:49:01 PAGE 1   
 
 
 C51 COMPILER V9.53.0.0, COMPILATION OF MODULE MAIN
@@ -34,7 +34,7 @@ line level    source
   18           */
   19          // #define MUX_VALUE_ARRAY 0x0A, 0x0B, 0x0C, 0x02, 0x01, 0x09, 0x03, 0x06, 0x0D,
   20          
-  21          #define DELAY_LENGTH 70000
+  21          #define DELAY_LENGTH 60000
   22          
   23          /**
   24           * @brief main program
@@ -48,99 +48,100 @@ line level    source
   32   1              IE |= IE_EA__ENABLED | IE_ET2__ENABLED;
   33   1      
   34   1              // blink LEDs at startup...just because it's fun
-  35   1              TouchyLEDOn(LED3 | LED4);
+  35   1              TouchySetLEDs(LED3 | LED4);
   36   1              SimpleDelay(DELAY_LENGTH);
   37   1      
-  38   1              TouchyLEDOn(LED2 | LED3 | LED4 | LED5);
+  38   1              TouchySetLEDs(LED2 | LED3 | LED4 | LED5);
   39   1              SimpleDelay(DELAY_LENGTH);
   40   1      
-  41   1              TouchyLEDOn(LED1 | LED2 | LED3 | LED4 | LED5 | LED6);
-  42   1              TouchySetLEDIntensity(LED1 | LED6, 255);
-  43   1              SimpleDelay(DELAY_LENGTH);
-  44   1      
-  45   1              TouchyLEDOff(LED1 | LED2 | LED3 | LED4 | LED5 | LED6);
-  46   1              TouchySetLEDIntensity(LED1 | LED6, 0);
-  47   1      
-  48   1              // main application loop
-  49   1              while (1) {
-C51 COMPILER V9.53.0.0   MAIN                                                              07/10/2017 21:21:03 PAGE 2   
+  41   1              TouchySetLEDs(LED1 | LED2 | LED3 | LED4 | LED5 | LED6);
+  42   1              SimpleDelay(DELAY_LENGTH);
+  43   1      
+  44   1              TouchySetLEDs(LED1 | LED2 | LED5 | LED6);
+  45   1              SimpleDelay(DELAY_LENGTH);
+  46   1      
+  47   1              TouchySetLEDs(LED1 | LED6);
+  48   1              SimpleDelay(DELAY_LENGTH);
+  49   1      
+C51 COMPILER V9.53.0.0   MAIN                                                              07/11/2017 21:49:01 PAGE 2   
 
-  50   2      // $[Generated Run-time code]
-  51   2                      // -----------------------------------------------------------------------------
-  52   2                      // If low power features are enabled, this will either put the device into a low
-  53   2                      // power state until it is time to take another scan, or put the device into a
-  54   2                      // low-power sleep mode if no touches are active
+  50   1              TouchyLEDOff(LED1 | LED2 | LED3 | LED4 | LED5 | LED6);
+  51   1      
+  52   1              // main application loop
+  53   1              while (1) {
+  54   2      // $[Generated Run-time code]
   55   2                      // -----------------------------------------------------------------------------
-  56   2                      CSLIB_lowPowerUpdate();
-  57   2      
-  58   2                      // -----------------------------------------------------------------------------
-  59   2                      // Performs all scanning and data structure updates
-  60   2                      // -----------------------------------------------------------------------------
-  61   2                      CSLIB_update();
-  62   2      
-  63   2      // [Generated Run-time code]$
-  64   2                      TouchyButtonRefresh();
-  65   2      
-  66   2                      if (TouchySleepNow()) {
-  67   3                              TouchySleepLEDs();
-  68   3                      }
-  69   2                      else {
-  70   3                              UpdateLed(TouchyReadSlider());
-  71   3                              TouchyLEDToggle(TouchyGetPressedButtons() & (LED2 | LED3 | LED4 | LED5));
-  72   3      
-  73   3                              if (TouchyGetPressedButtons() & BUTTON1) {
-  74   4                                      TouchyLEDToggle(LED2 | LED3 | LED4 | LED5);
-  75   4                                      TouchySetLEDIntensity(LED1, 255 - TouchyReadLEDIntensity(LED1));
-  76   4                                      TouchySetLEDIntensity(LED6, 255 - TouchyReadLEDIntensity(LED6));
-  77   4                              }
-  78   3      
-  79   3                              if (TouchyGetPressedButtons() & BUTTON6) {
-  80   4                                      if (TouchyReadLEDs() || TouchyReadLEDIntensity(LED1) || TouchyReadLEDIntensity(LED6)) {
-  81   5                                              TouchyLEDOff(LED1 | LED2 | LED3 | LED4 | LED5 | LED6);
-  82   5                                              TouchySetLEDIntensity(LED1 | LED6, 0);
-  83   5                                      }
-  84   4                                      else {
-  85   5                                              TouchyLEDOn(LED1 | LED2 | LED3 | LED4 | LED5 | LED6);
-  86   5                                              TouchySetLEDIntensity(LED1 | LED6, 255);
-  87   5                                      }
-  88   4                              }
-  89   3                      }
-  90   2              }
-  91   1      }
-  92          
+  56   2                      // If low power features are enabled, this will either put the device into a low
+  57   2                      // power state until it is time to take another scan, or put the device into a
+  58   2                      // low-power sleep mode if no touches are active
+  59   2                      // -----------------------------------------------------------------------------
+  60   2                      CSLIB_lowPowerUpdate();
+  61   2      
+  62   2                      // -----------------------------------------------------------------------------
+  63   2                      // Performs all scanning and data structure updates
+  64   2                      // -----------------------------------------------------------------------------
+  65   2                      CSLIB_update();
+  66   2      
+  67   2      // [Generated Run-time code]$
+  68   2                      TouchyButtonRefresh();
+  69   2      
+  70   2                      if (TouchySleepNow()) {
+  71   3                              TouchySleepLEDs();
+  72   3                      }
+  73   2                      else {
+  74   3                              UpdateLed(TouchyReadSlider());
+  75   3      
+  76   3                              TouchyLEDToggle(TouchyGetPressedButtons() & (LED2 | LED3 | LED4 | LED5));
+  77   3      
+  78   3                              if (TouchyGetPressedButtons() & BUTTON1) {
+  79   4                                      TouchyLEDToggle(LED1 | LED2 | LED3 | LED4 | LED5 | LED6);
+  80   4                              }
+  81   3      
+  82   3                              if (TouchyGetPressedButtons() & BUTTON6) {
+  83   4                                      if (TouchyReadLEDs() || TouchyReadLEDIntensity(LED1) || TouchyReadLEDIntensity(LED6)) {
+  84   5                                              TouchyLEDOff(LED1 | LED2 | LED3 | LED4 | LED5 | LED6);
+  85   5                                      }
+  86   4                                      else {
+  87   5                                              TouchyLEDOn(LED1 | LED2 | LED3 | LED4 | LED5 | LED6);
+  88   5                                      }
+  89   4                              }
+  90   3                      }
+  91   2              }
+  92   1      }
   93          
-  94          // Update the LED brightness based on angle
-  95          // angle [0, 359] => intensity [0, 255]
-  96          void UpdateLed(uint16_t angle)
-  97          {
-  98   1              static uint8_t lastIntensity = 0;
-  99   1      
- 100   1              // 256 / 360 reduces to 32 / 45
- 101   1              uint8_t intensity = angle * 32 / 45;
- 102   1      
- 103   1              if (intensity != lastIntensity) {
- 104   2                      TouchySetLEDIntensity(LED1, intensity);
- 105   2                      TouchySetLEDIntensity(LED6, 255-intensity);
- 106   2                      lastIntensity = intensity;
- 107   2              }
- 108   1      }
- 109          
+  94          
+  95          // Update the LED brightness based on angle
+  96          // angle [0, 359] => intensity [0, 255]
+  97          void UpdateLed(uint16_t angle)
+  98          {
+  99   1              static uint8_t lastIntensity = 0;
+ 100   1      
+ 101   1              // 256 / 360 reduces to 32 / 45
+ 102   1              uint8_t intensity = angle * 32 / 45;
+ 103   1      
+ 104   1              if (intensity != lastIntensity) {
+ 105   2                      TouchySetLEDIntensity(LED1, intensity);
+ 106   2                      TouchySetLEDIntensity(LED6, 255-intensity);
+ 107   2                      lastIntensity = intensity;
+ 108   2              }
+ 109   1      }
  110          
- 111          // Create a simple delay
- 112          void SimpleDelay(uint32_t delayLen)
-C51 COMPILER V9.53.0.0   MAIN                                                              07/10/2017 21:21:03 PAGE 3   
+ 111          
+ 112          // Create a simple delay
+C51 COMPILER V9.53.0.0   MAIN                                                              07/11/2017 21:49:01 PAGE 3   
 
- 113          {
- 114   1              volatile uint32_t i = 0;
- 115   1      
- 116   1              for (i = 0; i < delayLen; i++)
- 117   1              {
- 118   2              }
- 119   1      }
+ 113          void SimpleDelay(uint32_t delayLen)
+ 114          {
+ 115   1              volatile uint32_t i = 0;
+ 116   1      
+ 117   1              for (i = 0; i < delayLen; i++)
+ 118   1              {
+ 119   2              }
+ 120   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    308    ----
+   CODE SIZE        =    272    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----

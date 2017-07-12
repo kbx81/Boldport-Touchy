@@ -1,4 +1,4 @@
-C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/10/2017 21:21:09 PAGE 1   
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/11/2017 21:49:04 PAGE 1   
 
 
 C51 COMPILER V9.53.0.0, COMPILATION OF MODULE LOW_POWER_CONFIG
@@ -63,7 +63,7 @@ line level    source
   46          
   47          // Variables used for the RTC interface
   48          uint8_t PMU_PMU0CFLocal;                       // Holds the desired Wake-up sources
-C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/10/2017 21:21:09 PAGE 2   
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/11/2017 21:49:04 PAGE 2   
 
   49          
   50          // Define Wake-Up Flags
@@ -128,7 +128,7 @@ line level    source
  109          //
  110          void enterLowPowerState(void)
  111          {
-C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/10/2017 21:21:09 PAGE 3   
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/11/2017 21:49:04 PAGE 3   
 
  112   1         readyRegistersForSleep();
  113   1      
@@ -193,7 +193,7 @@ line level    source
  172          // configureSensorForSleepMode
  173          //-----------------------------------------------------------------------------
  174          //
-C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/10/2017 21:21:09 PAGE 4   
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/11/2017 21:49:04 PAGE 4   
 
  175          // This is a top-level call to configure the sensor to its operational state
  176          // during sleep mode.
@@ -258,7 +258,7 @@ line level    source
  235   1         CS0MD1  |= 0x02;                    // Set Gain to 3X
  236   1         CS0MD2 = 0x00;                      // 12-bit mode
  237   1      }
-C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/10/2017 21:21:09 PAGE 5   
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/11/2017 21:49:04 PAGE 5   
 
  238          
  239          
@@ -323,7 +323,7 @@ line level    source
  298   1         {
  299   2            PM_wakeup = 1;
  300   2         }
-C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/10/2017 21:21:09 PAGE 6   
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/11/2017 21:49:04 PAGE 6   
 
  301   1         // Check for a reset pin Wakeup
  302   1         if(PMU0CFstate & RSTWK)
@@ -388,7 +388,7 @@ line level    source
  361   1         if(RTC0KEY == 0x00)
  362   1         {
  363   2            RTC0KEY = 0xA5;                  // Unlock the smaRTClock interface
-C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/10/2017 21:21:09 PAGE 7   
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/11/2017 21:49:04 PAGE 7   
 
  364   2            RTC0KEY = 0xF1;
  365   2         }
@@ -453,7 +453,7 @@ line level    source
  424   1         // Wait > 2 ms
  425   1         for (i=0x540; i!=0; i--);
  426   1      
-C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/10/2017 21:21:09 PAGE 8   
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/11/2017 21:49:04 PAGE 8   
 
  427   1         RTC_write (RTC0CN, 0xC0);           // Clear the clock fail flag (precautionary).
  428   1      
@@ -518,7 +518,7 @@ line level    source
  487          {
  488   1         RTC0ADR  = (0x10 | reg);            // pick register
  489   1         RTC0DAT = value;                    // write data
-C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/10/2017 21:21:09 PAGE 9   
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/11/2017 21:49:04 PAGE 9   
 
  490   1      }
  491          
@@ -583,7 +583,7 @@ line level    source
  550          //
  551          // Instruction timing of multi-byte read with short bit set
  552          //
-C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/10/2017 21:21:09 PAGE 10  
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/11/2017 21:49:04 PAGE 10  
 
  553          //       mov      RTC0ADR, #0d0h
  554          //       nop
@@ -648,7 +648,7 @@ line level    source
  613          {
  614   1         SI_UU32_t current_time;
  615   1      
-C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/10/2017 21:21:09 PAGE 11  
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/11/2017 21:49:04 PAGE 11  
 
  616   1         current_time.u32 = time;
  617   1      
@@ -713,7 +713,7 @@ line level    source
  676   1      
  677   1         RTC_zeroCurrentTime();              // Reset the RTC Timer
  678   1         RTC_writeAlarm((RTCCLK * (uint32_t)alarm_frequency) / 1000L);
-C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/10/2017 21:21:09 PAGE 12  
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/11/2017 21:49:04 PAGE 12  
 
  679   1      
  680   1      }
@@ -778,7 +778,7 @@ line level    source
  739          
  740                RTC_write (RTC0XCN, 0x60);       // Configure the smaRTClock
  741                                                 // oscillator for crystal mode
-C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/10/2017 21:21:09 PAGE 13  
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/11/2017 21:49:04 PAGE 13  
 
  742                                                 // Bias Doubling Enabled
  743                                                 // AGC Disabled
@@ -843,7 +843,7 @@ line level    source
  802             RTC_RTC0CNLocal = 0xC0;                // Initialize Local Copy of RTC0CN
  803          
  804          
-C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/10/2017 21:21:09 PAGE 14  
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/11/2017 21:49:04 PAGE 14  
 
  805          
  806             RTC_Configured = 1;
@@ -908,7 +908,7 @@ line level    source
  865          // Return Value : none
  866          // Parameters   : 1) uint8_t reg - address of RTC register to write
  867          //                2) uint8_t value - the value to write to <reg>
-C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/10/2017 21:21:09 PAGE 15  
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/11/2017 21:49:04 PAGE 15  
 
  868          //
  869          // This function will Write one byte to the specified RTC register.
@@ -973,7 +973,7 @@ line level    source
  928             RTC0DAT = alarm_value.u8[B0];    // write data
  929             while (RTC0ADR & 0x80);                                               // poll for busy bit -> 0
  930             RTC0DAT = alarm_value.u8[B1];    // write data
-C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/10/2017 21:21:09 PAGE 16  
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/11/2017 21:49:04 PAGE 16  
 
  931             while (RTC0ADR & 0x80);                                               // poll for busy bit -> 0
  932             RTC0DAT = alarm_value.u8[B2];    // write data
@@ -1038,7 +1038,7 @@ line level    source
  991            PM_wakeup = 0;
  992          }
  993          
-C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/10/2017 21:21:09 PAGE 17  
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/11/2017 21:49:04 PAGE 17  
 
  994          
  995          //-----------------------------------------------------------------------------
@@ -1103,7 +1103,7 @@ line level    source
 1054             NOP();
 1055             RTC0DAT = 0x00;                   // write data
 1056             NOP();
-C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/10/2017 21:21:09 PAGE 18  
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/11/2017 21:49:04 PAGE 18  
 
 1057             RTC0DAT = 0x00;                   // write data
 1058             NOP();

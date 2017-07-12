@@ -1,4 +1,4 @@
-C51 COMPILER V9.53.0.0   HARDWARE_ROUTINES                                                 07/10/2017 21:21:09 PAGE 1   
+C51 COMPILER V9.53.0.0   HARDWARE_ROUTINES                                                 07/11/2017 21:49:03 PAGE 1   
 
 
 C51 COMPILER V9.53.0.0, COMPILATION OF MODULE HARDWARE_ROUTINES
@@ -63,7 +63,7 @@ line level    source
   46          //-----------------------------------------------------------------------------
   47          //
   48          // Returns the gain bits of the sensor.
-C51 COMPILER V9.53.0.0   HARDWARE_ROUTINES                                                 07/10/2017 21:21:09 PAGE 2   
+C51 COMPILER V9.53.0.0   HARDWARE_ROUTINES                                                 07/11/2017 21:49:03 PAGE 2   
 
   49          //
   50          uint8_t readGain(void)
@@ -128,7 +128,7 @@ line level    source
  109   1            scanResult.u8[MSB] = CS0DH;         // Read Result
  110   1            scanResult.u8[LSB] = CS0DL;
  111   1      
-C51 COMPILER V9.53.0.0   HARDWARE_ROUTINES                                                 07/10/2017 21:21:09 PAGE 3   
+C51 COMPILER V9.53.0.0   HARDWARE_ROUTINES                                                 07/11/2017 21:49:03 PAGE 3   
 
  112   1            CS0CN0 = 0x00;                       // Disable CS0
  113   1      
@@ -193,7 +193,7 @@ line level    source
  172   1         CS0MD2 &= 0xC0;                       // 12-bit mode
  173   1         CS0MD2 |= 0x40;
  174   1         CS0THH = 0;
-C51 COMPILER V9.53.0.0   HARDWARE_ROUTINES                                                 07/10/2017 21:21:09 PAGE 4   
+C51 COMPILER V9.53.0.0   HARDWARE_ROUTINES                                                 07/11/2017 21:49:03 PAGE 4   
 
  175   1         CS0THL = 0;
  176   1      
@@ -258,7 +258,7 @@ MODULE INFORMATION:   STATIC OVERLAYABLE
    HDATA SIZE       =   ----    ----
    XDATA CONST SIZE =   ----    ----
    FAR CONST SIZE   =   ----    ----
-C51 COMPILER V9.53.0.0   HARDWARE_ROUTINES                                                 07/10/2017 21:21:09 PAGE 5   
+C51 COMPILER V9.53.0.0   HARDWARE_ROUTINES                                                 07/11/2017 21:49:03 PAGE 5   
 
 END OF MODULE INFORMATION.
 

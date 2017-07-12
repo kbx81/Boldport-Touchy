@@ -1,4 +1,4 @@
-C51 COMPILER V9.53.0.0   TOUCHY                                                            07/10/2017 21:21:04 PAGE 1   
+C51 COMPILER V9.53.0.0   TOUCHY                                                            07/11/2017 21:49:02 PAGE 1   
 
 
 C51 COMPILER V9.53.0.0, COMPILATION OF MODULE TOUCHY
@@ -36,230 +36,328 @@ line level    source
   20          SI_SBIT (LED5pin, SFR_P1, 0);
   21          SI_SBIT (LED6pin, SFR_P0, 7);
   22          
-  23          static volatile uint8_t ledState = 0, intensity1 = 0, intensity2 = 0, buttonState = 0, previousButtonState
-             - = 0, buttonsChanged = 0, sleepCounter = 0;
-  24          static volatile uint16_t angle = 0, previousAngle = 0;
-  25          
-  26          
-  27          uint8_t TouchyReadLEDs(void)
-  28          {
-  29   1              return ledState;
-  30   1      }
+  23          static uint16_t angle = 0, previousAngle = 0;
+  24          static uint8_t ledState = 0, buttonState = 0, previousButtonState = 0, buttonsChanged = 0, sleepCounter = 
+             -0;
+  25          #ifdef DIMMER1
+  26          static uint8_t intensity1 = 0;
+  27          #endif
+  28          #ifdef DIMMER2
+  29          static uint8_t intensity2 = 0;
+  30          #endif
   31          
   32          
-  33          void TouchySetLEDs(uint8_t leds)
+  33          uint8_t TouchyReadLEDs(void)
   34          {
-  35   1              // Make sure only existing LEDs are specified
-  36   1              leds &= (1 << LED_COUNT) - 1;
-  37   1      
-  38   1              // Update the saved state of all LEDs with the requested changes.
-  39   1              ledState = leds;
-  40   1      
-  41   1              TouchyLEDRefresh();
-  42   1      }
-  43          
-  44          
-  45          void TouchyLEDOff(uint8_t leds)
-  46          {
-  47   1              // Update the saved state of all LEDs with the requested changes
-  48   1              ledState &= ~leds;
-C51 COMPILER V9.53.0.0   TOUCHY                                                            07/10/2017 21:21:04 PAGE 2   
+  35   1              return ledState;
+  36   1      }
+  37          
+  38          
+  39          void TouchySetLEDs(uint8_t leds)
+  40          {
+  41   1              // Make sure only existing LEDs are specified
+  42   1              leds &= (1 << LED_COUNT) - 1;
+  43   1      
+  44   1              // Update the saved state of all LEDs with the requested changes.
+  45   1              ledState = leds;
+  46   1      
+  47   1      #ifdef DIMMER1
+  48   1              intensity1 = 0;
+C51 COMPILER V9.53.0.0   TOUCHY                                                            07/11/2017 21:49:02 PAGE 2   
 
   49   1      
-  50   1              TouchyLEDRefresh();
-  51   1      }
-  52          
-  53          
-  54          void TouchyLEDOn(uint8_t leds)
-  55          {
-  56   1              // Make sure only existing LEDs are specified
-  57   1              leds &= (1 << LED_COUNT) - 1;
-  58   1      
-  59   1              // Update the saved state of all LEDs with the requested changes
-  60   1              ledState |= leds;
+  50   1              if (leds & LED1) {
+  51   2                      intensity1 = 255;
+  52   2              }
+  53   1      #endif
+  54   1      #ifdef DIMMER2
+  55   1              intensity2 = 0;
+  56   1      
+  57   1              if (leds & LED6) {
+  58   2                      intensity2 = 255;
+  59   2              }
+  60   1      #endif
   61   1      
   62   1              TouchyLEDRefresh();
   63   1      }
   64          
   65          
-  66          void TouchyLEDToggle(uint8_t leds)
+  66          void TouchyLEDOff(uint8_t leds)
   67          {
-  68   1              // Make sure only existing LEDs are specified
-  69   1              leds &= (1 << LED_COUNT) - 1;
+  68   1              // Update the saved state of all LEDs with the requested changes
+  69   1              ledState &= ~leds;
   70   1      
-  71   1              // Update the saved state of all LEDs with the requested changes
-  72   1              ledState = (~ledState & leds) | (ledState & ~leds);
-  73   1      
-  74   1              TouchyLEDRefresh();
-  75   1      }
-  76          
-  77          
-  78          void TouchySetLEDIntensity(uint8_t leds, uint8_t intensity)
-  79          {
-  80   1              if (leds & LED1)
-  81   1              {
-  82   2                      intensity1 = intensity;
-  83   2                      if (intensity == 255)
-  84   2                      {
-  85   3                              PCA0CPM0 &= ~PCA0CPM0_ECOM__ENABLED;
-  86   3                      }
-  87   2              }
-  88   1      
-  89   1              if (leds & LED6)
-  90   1              {
-  91   2                      intensity2 = intensity;
-  92   2                      if (intensity == 255)
-  93   2                      {
-  94   3                              PCA0CPM1 &= ~PCA0CPM1_ECOM__ENABLED;
-  95   3                      }
+  71   1      #ifdef DIMMER1
+  72   1              if (leds & LED1) {
+  73   2                      intensity1 = 0;
+  74   2              }
+  75   1      #endif
+  76   1      #ifdef DIMMER2
+  77   1              if (leds & LED6) {
+  78   2                      intensity2 = 0;
+  79   2              }
+  80   1      #endif
+  81   1              TouchyLEDRefresh();
+  82   1      }
+  83          
+  84          
+  85          void TouchyLEDOn(uint8_t leds)
+  86          {
+  87   1              // Make sure only existing LEDs are specified
+  88   1              leds &= (1 << LED_COUNT) - 1;
+  89   1      
+  90   1              // Update the saved state of all LEDs with the requested changes
+  91   1              ledState |= leds;
+  92   1      
+  93   1      #ifdef DIMMER1
+  94   1              if (leds & LED1) {
+  95   2                      intensity1 = 255;
   96   2              }
-  97   1      
-  98   1              TouchyLEDRefresh();
-  99   1      }
- 100          
- 101          
- 102          uint8_t TouchyReadLEDIntensity(uint8_t leds)
- 103          {
- 104   1              uint8_t intensity = 0;
- 105   1      
- 106   1              if (leds & LED1)
- 107   1              {
- 108   2                      intensity = intensity1;
- 109   2              }
- 110   1      
- 111   1              if (leds & LED6)
-C51 COMPILER V9.53.0.0   TOUCHY                                                            07/10/2017 21:21:04 PAGE 3   
+  97   1      #endif
+  98   1      #ifdef DIMMER2
+  99   1              if (leds & LED6) {
+ 100   2                      intensity2 = 255;
+ 101   2              }
+ 102   1      #endif
+ 103   1              TouchyLEDRefresh();
+ 104   1      }
+ 105          
+ 106          
+ 107          void TouchyLEDToggle(uint8_t leds)
+ 108          {
+ 109   1              // Make sure only existing LEDs are specified
+ 110   1              leds &= (1 << LED_COUNT) - 1;
+ 111   1      
+C51 COMPILER V9.53.0.0   TOUCHY                                                            07/11/2017 21:49:02 PAGE 3   
 
- 112   1              {
- 113   2                      intensity = intensity2;
- 114   2              }
- 115   1      
- 116   1              return intensity;
- 117   1      }
- 118          
- 119          
- 120          void TouchySleepLEDs(void)
- 121          {
- 122   1              LED1pin = LED2pin = LED3pin = LED4pin = LED5pin = LED6pin = true;
- 123   1              PCA0CPH0 = PCA0CPH1 = 0;
- 124   1      
- 125   1              return;
+ 112   1              // Update the saved state of all LEDs with the requested changes
+ 113   1              ledState = (~ledState & leds) | (ledState & ~leds);
+ 114   1      
+ 115   1      #ifdef DIMMER1
+ 116   1              if (leds & LED1) {
+ 117   2                      intensity1 = 255 - intensity1;
+ 118   2              }
+ 119   1      #endif
+ 120   1      #ifdef DIMMER2
+ 121   1              if (leds & LED6) {
+ 122   2                      intensity2 = 255 - intensity2;
+ 123   2              }
+ 124   1      #endif
+ 125   1              TouchyLEDRefresh();
  126   1      }
  127          
  128          
- 129          void TouchyLEDRefresh(void)
+ 129          void TouchySetLEDIntensity(uint8_t leds, uint8_t intensity)
  130          {
- 131   1              LED1pin = !((ledState >> 0) & 0x01);
- 132   1              LED2pin = !((ledState >> 1) & 0x01);
- 133   1              LED3pin = !((ledState >> 2) & 0x01);
- 134   1              LED4pin = !((ledState >> 3) & 0x01);
- 135   1              LED5pin = !((ledState >> 4) & 0x01);
- 136   1              LED6pin = !((ledState >> 5) & 0x01);
- 137   1      
- 138   1              PCA0CPH0 = intensity1;
- 139   1              PCA0CPH1 = intensity2;
- 140   1      }
- 141          
- 142          
- 143          void TouchyButtonRefresh(void)
- 144          {
- 145   1              buttonState = 0;
- 146   1      
- 147   1              if (CSLIB_isSensorSingleActive(TS_B1)) {
- 148   2                      buttonState |= BUTTON1;
- 149   2              }
- 150   1      
- 151   1              if (CSLIB_isSensorSingleActive(TS_B2)) {
- 152   2                      buttonState |= BUTTON2;
- 153   2              }
- 154   1      
- 155   1              if (CSLIB_isSensorSingleActive(TS_B3)) {
- 156   2                      buttonState |= BUTTON3;
- 157   2              }
- 158   1      
- 159   1              if (CSLIB_isSensorSingleActive(TS_B4)) {
- 160   2                      buttonState |= BUTTON4;
- 161   2              }
- 162   1      
- 163   1              if (CSLIB_isSensorSingleActive(TS_B5)) {
- 164   2                      buttonState |= BUTTON5;
+ 131   1      #ifdef DIMMER1
+ 132   1              if (leds & LED1)
+ 133   1              {
+ 134   2                      intensity1 = intensity;
+ 135   2      
+ 136   2                      if (intensity) {
+ 137   3                              ledState |= LED1;
+ 138   3                      }
+ 139   2                      else {
+ 140   3                              ledState &= ~LED1;
+ 141   3                      }
+ 142   2      
+ 143   2                      if (intensity == 255)
+ 144   2                      {
+ 145   3                              PCA0CPM0 &= ~PCA0CPM0_ECOM__ENABLED;
+ 146   3                      }
+ 147   2              }
+ 148   1      #endif
+ 149   1      #ifdef DIMMER2
+ 150   1              if (leds & LED6)
+ 151   1              {
+ 152   2                      intensity2 = intensity;
+ 153   2      
+ 154   2                      if (intensity) {
+ 155   3                              ledState |= LED6;
+ 156   3                      }
+ 157   2                      else {
+ 158   3                              ledState &= ~LED6;
+ 159   3                      }
+ 160   2      
+ 161   2                      if (intensity == 255)
+ 162   2                      {
+ 163   3                              PCA0CPM1 &= ~PCA0CPM1_ECOM__ENABLED;
+ 164   3                      }
  165   2              }
- 166   1      
- 167   1              if (CSLIB_isSensorSingleActive(TS_B6)) {
- 168   2                      buttonState |= BUTTON6;
- 169   2              }
- 170   1      
- 171   1              buttonsChanged = buttonState ^ previousButtonState;
- 172   1              previousButtonState = buttonState;
- 173   1      
- 174   1              if (buttonState) {
-C51 COMPILER V9.53.0.0   TOUCHY                                                            07/10/2017 21:21:04 PAGE 4   
+ 166   1      #endif
+ 167   1              TouchyLEDRefresh();
+ 168   1      }
+ 169          
+ 170          
+ 171          uint8_t TouchyReadLEDIntensity(uint8_t leds)
+ 172          {
+ 173   1              uint8_t intensity = 0;
+ 174   1      
+C51 COMPILER V9.53.0.0   TOUCHY                                                            07/11/2017 21:49:02 PAGE 4   
 
- 175   2                      sleepCounter = 0;
- 176   2              }
- 177   1      
- 178   1              // Check if sum of sensors is above a minimum threshold for better touch release behavior
- 179   1              if (IsTouchQualified())
- 180   1              {
- 181   2                      previousAngle = angle;
- 182   2      
- 183   2                      // Perform the centroid algorithm to determine the wheel angle position
- 184   2                      // (0 degrees is 12 o'clock, 90 degrees is 3 o'clock)
- 185   2                      angle = CalculatePosition();
- 186   2      
- 187   2                      sleepCounter = 0;
- 188   2              }
- 189   1      
- 190   1              sleepCounter++;
- 191   1      }
- 192          
- 193          
- 194          uint8_t TouchyReadButtons(void)
- 195          {
- 196   1              return buttonState;
- 197   1      }
- 198          
- 199          
- 200          uint8_t TouchyGetChangedButtons(void)
- 201          {
- 202   1              return buttonsChanged;
+ 175   1      #ifdef DIMMER1
+ 176   1              if (leds & LED1)
+ 177   1              {
+ 178   2                      intensity = intensity1;
+ 179   2              }
+ 180   1      #endif
+ 181   1      #ifdef DIMMER2
+ 182   1              if (leds & LED6)
+ 183   1              {
+ 184   2                      intensity = intensity2;
+ 185   2              }
+ 186   1      #endif
+ 187   1              return intensity;
+ 188   1      }
+ 189          
+ 190          
+ 191          void TouchySleepLEDs(void)
+ 192          {
+ 193   1              LED1pin = LED2pin = LED3pin = LED4pin = LED5pin = LED6pin = true;
+ 194   1      
+ 195   1      #ifdef DIMMER1
+ 196   1              DIMMER1 = 0;
+ 197   1      #endif
+ 198   1      #ifdef DIMMER2
+ 199   1              DIMMER2 = 0;
+ 200   1      #endif
+ 201   1      
+ 202   1              return;
  203   1      }
  204          
  205          
- 206          uint8_t TouchyGetPressedButtons(void)
+ 206          void TouchyLEDRefresh(void)
  207          {
- 208   1              return buttonState & buttonsChanged;
- 209   1      }
- 210          
- 211          
- 212          uint8_t TouchyGetReleasedButtons(void)
- 213          {
- 214   1              return ~buttonState & buttonsChanged;
- 215   1      }
- 216          
- 217          
- 218          uint16_t TouchyReadSlider(void)
- 219          {
- 220   1              return angle;
+ 208   1              LED1pin = !((ledState >> 0) & 0x01);
+ 209   1              LED2pin = !((ledState >> 1) & 0x01);
+ 210   1              LED3pin = !((ledState >> 2) & 0x01);
+ 211   1              LED4pin = !((ledState >> 3) & 0x01);
+ 212   1              LED5pin = !((ledState >> 4) & 0x01);
+ 213   1              LED6pin = !((ledState >> 5) & 0x01);
+ 214   1      
+ 215   1      #ifdef DIMMER1
+ 216   1              DIMMER1 = intensity1;
+ 217   1      #endif
+ 218   1      #ifdef DIMMER2
+ 219   1              DIMMER2 = intensity2;
+ 220   1      #endif
  221   1      }
  222          
  223          
- 224          bool TouchySleepNow(void)
+ 224          void TouchyButtonRefresh(void)
  225          {
- 226   1              if (sleepCounter >= DEF_COUNTS_BEFORE_SLEEP) {
- 227   2                      return true;
- 228   2              }
- 229   1      
- 230   1              return false;
- 231   1      }
+ 226   1              buttonState = 0;
+ 227   1      
+ 228   1              if (CSLIB_isSensorSingleActive(TS_B1)) {
+ 229   2                      buttonState |= BUTTON1;
+ 230   2              }
+ 231   1      
+ 232   1              if (CSLIB_isSensorSingleActive(TS_B2)) {
+ 233   2                      buttonState |= BUTTON2;
+ 234   2              }
+ 235   1      
+ 236   1              if (CSLIB_isSensorSingleActive(TS_B3)) {
+ 237   2                      buttonState |= BUTTON3;
+C51 COMPILER V9.53.0.0   TOUCHY                                                            07/11/2017 21:49:02 PAGE 5   
+
+ 238   2              }
+ 239   1      
+ 240   1              if (CSLIB_isSensorSingleActive(TS_B4)) {
+ 241   2                      buttonState |= BUTTON4;
+ 242   2              }
+ 243   1      
+ 244   1              if (CSLIB_isSensorSingleActive(TS_B5)) {
+ 245   2                      buttonState |= BUTTON5;
+ 246   2              }
+ 247   1      
+ 248   1              if (CSLIB_isSensorSingleActive(TS_B6)) {
+ 249   2                      buttonState |= BUTTON6;
+ 250   2              }
+ 251   1      
+ 252   1              buttonsChanged = buttonState ^ previousButtonState;
+ 253   1              previousButtonState = buttonState;
+ 254   1      
+ 255   1              if (buttonState) {
+ 256   2                      sleepCounter = 0;
+ 257   2              }
+ 258   1      
+ 259   1              // Check if sum of sensors is above a minimum threshold for better touch release behavior
+ 260   1              if (IsTouchQualified())
+ 261   1              {
+ 262   2                      previousAngle = angle;
+ 263   2      
+ 264   2                      // Perform the centroid algorithm to determine the wheel angle position
+ 265   2                      // (0 degrees is 12 o'clock, 90 degrees is 3 o'clock)
+ 266   2                      angle = CalculatePosition();
+ 267   2      
+ 268   2                      sleepCounter = 0;
+ 269   2              }
+ 270   1      
+ 271   1              sleepCounter++;
+ 272   1      }
+ 273          
+ 274          
+ 275          uint8_t TouchyReadButtons(void)
+ 276          {
+ 277   1              return buttonState;
+ 278   1      }
+ 279          
+ 280          
+ 281          uint8_t TouchyGetChangedButtons(void)
+ 282          {
+ 283   1              return buttonsChanged;
+ 284   1      }
+ 285          
+ 286          
+ 287          uint8_t TouchyGetPressedButtons(void)
+ 288          {
+ 289   1              return buttonState & buttonsChanged;
+ 290   1      }
+ 291          
+ 292          
+ 293          uint8_t TouchyGetReleasedButtons(void)
+ 294          {
+ 295   1              return ~buttonState & buttonsChanged;
+ 296   1      }
+ 297          
+ 298          
+ 299          uint16_t TouchyReadSlider(void)
+ 300          {
+C51 COMPILER V9.53.0.0   TOUCHY                                                            07/11/2017 21:49:02 PAGE 6   
+
+ 301   1              return angle;
+ 302   1      }
+ 303          
+ 304          
+ 305          int16_t TouchyReadSliderRelative(void)
+ 306          {
+ 307   1              if (angle - previousAngle > 180)
+ 308   1              {
+ 309   2                      return angle - previousAngle - 360;
+ 310   2              }
+ 311   1      
+ 312   1              if (previousAngle - angle > 180) {
+ 313   2                      return angle - previousAngle + 360;
+ 314   2              }
+ 315   1      
+ 316   1              return angle - previousAngle;
+ 317   1      }
+ 318          
+ 319          
+ 320          bool TouchySleepNow(void)
+ 321          {
+ 322   1              if (sleepCounter >= DEF_COUNTS_BEFORE_SLEEP) {
+ 323   2                      return true;
+ 324   2              }
+ 325   1      
+ 326   1              return false;
+ 327   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    322    ----
+   CODE SIZE        =    499    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
-C51 COMPILER V9.53.0.0   TOUCHY                                                            07/10/2017 21:21:04 PAGE 5   
-
    PDATA SIZE       =   ----    ----
    DATA SIZE        =     11    ----
    IDATA SIZE       =   ----    ----

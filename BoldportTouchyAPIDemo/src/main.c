@@ -18,7 +18,7 @@
  */
 // #define MUX_VALUE_ARRAY 0x0A, 0x0B, 0x0C, 0x02, 0x01, 0x09, 0x03, 0x06, 0x0D,
 
-#define DELAY_LENGTH 70000
+#define DELAY_LENGTH 60000
 
 /**
  * @brief main program
@@ -32,18 +32,22 @@ int main(void) {
 	IE |= IE_EA__ENABLED | IE_ET2__ENABLED;
 
 	// blink LEDs at startup...just because it's fun
-	TouchyLEDOn(LED3 | LED4);
+	TouchySetLEDs(LED3 | LED4);
 	SimpleDelay(DELAY_LENGTH);
 
-	TouchyLEDOn(LED2 | LED3 | LED4 | LED5);
+	TouchySetLEDs(LED2 | LED3 | LED4 | LED5);
 	SimpleDelay(DELAY_LENGTH);
 
-	TouchyLEDOn(LED1 | LED2 | LED3 | LED4 | LED5 | LED6);
-	TouchySetLEDIntensity(LED1 | LED6, 255);
+	TouchySetLEDs(LED1 | LED2 | LED3 | LED4 | LED5 | LED6);
+	SimpleDelay(DELAY_LENGTH);
+
+	TouchySetLEDs(LED1 | LED2 | LED5 | LED6);
+	SimpleDelay(DELAY_LENGTH);
+
+	TouchySetLEDs(LED1 | LED6);
 	SimpleDelay(DELAY_LENGTH);
 
 	TouchyLEDOff(LED1 | LED2 | LED3 | LED4 | LED5 | LED6);
-	TouchySetLEDIntensity(LED1 | LED6, 0);
 
 	// main application loop
 	while (1) {
@@ -68,22 +72,19 @@ int main(void) {
 		}
 		else {
 			UpdateLed(TouchyReadSlider());
+
 			TouchyLEDToggle(TouchyGetPressedButtons() & (LED2 | LED3 | LED4 | LED5));
 
 			if (TouchyGetPressedButtons() & BUTTON1) {
-				TouchyLEDToggle(LED2 | LED3 | LED4 | LED5);
-				TouchySetLEDIntensity(LED1, 255 - TouchyReadLEDIntensity(LED1));
-				TouchySetLEDIntensity(LED6, 255 - TouchyReadLEDIntensity(LED6));
+				TouchyLEDToggle(LED1 | LED2 | LED3 | LED4 | LED5 | LED6);
 			}
 
 			if (TouchyGetPressedButtons() & BUTTON6) {
 				if (TouchyReadLEDs() || TouchyReadLEDIntensity(LED1) || TouchyReadLEDIntensity(LED6)) {
 					TouchyLEDOff(LED1 | LED2 | LED3 | LED4 | LED5 | LED6);
-					TouchySetLEDIntensity(LED1 | LED6, 0);
 				}
 				else {
 					TouchyLEDOn(LED1 | LED2 | LED3 | LED4 | LED5 | LED6);
-					TouchySetLEDIntensity(LED1 | LED6, 255);
 				}
 			}
 		}

@@ -1,4 +1,4 @@
-AX51 MACRO ASSEMBLER  SILABS_STARTUP                                                        07/10/17 21:21:02 PAGE     1
+AX51 MACRO ASSEMBLER  SILABS_STARTUP                                                        07/11/17 21:49:00 PAGE     1
 
 
 MACRO ASSEMBLER AX51 V3.12.0.0
@@ -62,7 +62,7 @@ LOC    OBJ             LINE     SOURCE
                          45     ;     <i> The length of PDATA memory in bytes.
  0000                    46     PDATALEN        EQU     0H
                          47     ;
-AX51 MACRO ASSEMBLER  SILABS_STARTUP                                                        07/10/17 21:21:02 PAGE     2
+AX51 MACRO ASSEMBLER  SILABS_STARTUP                                                        07/11/17 21:49:00 PAGE     2
 
                          48     ;</h>
                          49     ;------------------------------------------------------------------------------
@@ -127,7 +127,7 @@ LOC    OBJ             LINE     SOURCE
  00F0                   108     B       DATA    0F0H
  0081                   109     SP      DATA    81H
  0082                   110     DPL     DATA    82H
-AX51 MACRO ASSEMBLER  SILABS_STARTUP                                                        07/10/17 21:21:02 PAGE     3
+AX51 MACRO ASSEMBLER  SILABS_STARTUP                                                        07/11/17 21:49:00 PAGE     3
 
  0083                   111     DPH     DATA    83H
                         112     
@@ -192,7 +192,7 @@ LOC    OBJ             LINE     SOURCE
                         171     
                         172     IF IBPSTACK <> 0
                                 EXTRN DATA (?C_IBP)
-AX51 MACRO ASSEMBLER  SILABS_STARTUP                                                        07/10/17 21:21:02 PAGE     4
+AX51 MACRO ASSEMBLER  SILABS_STARTUP                                                        07/11/17 21:49:00 PAGE     4
 
                                 
                                                 MOV     ?C_IBP,#LOW IBPSTACKTOP
@@ -225,7 +225,7 @@ LOC    OBJ             LINE     SOURCE
 00000C 020000     E     201                     LJMP    ?C_START
                         202     
                         203                     END
-AX51 MACRO ASSEMBLER  SILABS_STARTUP                                                        07/10/17 21:21:02 PAGE     5
+AX51 MACRO ASSEMBLER  SILABS_STARTUP                                                        07/11/17 21:49:00 PAGE     5
 
 SYMBOL TABLE LISTING
 ------ ----- -------
