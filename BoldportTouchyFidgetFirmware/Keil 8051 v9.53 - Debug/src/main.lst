@@ -1,0 +1,261 @@
+C51 COMPILER V9.53.0.0   MAIN                                                              07/13/2017 00:02:37 PAGE 1   
+
+
+C51 COMPILER V9.53.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\src\main.OBJ
+COMPILER INVOKED BY: c:\SiliconLabs\SimplicityStudio\v4\developer\toolchains\keil_8051\9.53\BIN\C51.exe C:\Users\kburzin
+                    -ski\SimplicityStudio\v4_workspace\BoldportTouchyFidgetFirmware\src\main.c OMF2 SMALL DEBUG OBJECTEXTEND ROM(LARGE) WARNI
+                    -NGLEVEL(2) FLOATFUZZY(3) OPTIMIZE(8,SPEED) DEFINE(DEBUG=1) INTVECTOR(0X0000) INTPROMOTE INCDIR(C:\Users\kburzinski\Simpl
+                    -icityStudio\v4_workspace\BoldportTouchyFidgetFirmware\inc\config;C:/Users/kburzinski/SimplicityStudio/v4_workspace/Boldp
+                    -ortTouchyFidgetFirmware/inc;C:/SiliconLabs/SimplicityStudio/v4/developer/sdks/8051/v4.0.4//Device/shared/si8051base;C:/S
+                    -iliconLabs/SimplicityStudio/v4/developer/sdks/8051/v4.0.4//Device/EFM8SB1/inc;C:/SiliconLabs/SimplicityStudio/v4/develop
+                    -er/sdks/8051/v4.0.4//Lib/efm8_capsense;C:/SiliconLabs/SimplicityStudio/v4/developer/sdks/8051/v4.0.4//Device/EFM8SB1/efm
+                    -8_capsense/device_layer) PRINT(.\src\main.lst) COND PAGEWIDTH(120) PAGELENGTH(65) OBJECT(.\src\main.OBJ)
+
+line level    source
+
+   1          /**
+   2           * @file main.c
+   3           * @author Keith Burzinski kbx81x@gmail.com @kbx81
+   4           * @date 2017-07-08
+   5           */
+   6          #include "main.h"
+   7          #include "touchy.h"
+   8          #include "stdlib.h"
+   9          
+  10          // $[Generated Includes]
+  11          #include "cslib_config.h"
+  12          #include "cslib.h"
+  13          // [Generated Includes]$
+  14          
+  15          
+  16          /**
+  17           * MUX_VALUE_ARRAY In inc/config/cslib_hwconfig.h should be set to this when updating the configurator
+  18           */
+  19          // #define MUX_VALUE_ARRAY 0x0A, 0x0B, 0x0C, 0x02, 0x01, 0x09, 0x03, 0x06, 0x0D,
+  20          
+  21          #define MAX_SPEED 80
+  22          #define BREAKAWAY_CYCLES 80
+  23          #define DELAY_LENGTH 60000
+  24          
+  25          /**
+  26           * @brief main program
+  27           */
+  28          int main(void) {
+  29   1              uint8_t fidgetMode = 0, selectedMode = 0, sliderLevel = 0, ledState = 0, ledIntensity = 0, breakawayCount
+             -er = 0;
+  30   1              int8_t levelOffset = 0, movementRate = MAX_SPEED / 2, movementTimer = 0;
+  31   1      
+  32   1              // call hardware initialization routine
+  33   1              enter_DefaultMode_from_RESET();
+  34   1              Tick_Init();
+  35   1      
+  36   1              // enable all interrupts
+  37   1              IE |= IE_EA__ENABLED | IE_ET2__ENABLED;
+  38   1      
+  39   1              // main application loop
+  40   1              while (1) {
+  41   2      // $[Generated Run-time code]
+  42   2                      // -----------------------------------------------------------------------------
+  43   2                      // If low power features are enabled, this will either put the device into a low
+  44   2                      // power state until it is time to take another scan, or put the device into a
+  45   2                      // low-power sleep mode if no touches are active
+  46   2                      // -----------------------------------------------------------------------------
+  47   2                      CSLIB_lowPowerUpdate();
+  48   2      
+C51 COMPILER V9.53.0.0   MAIN                                                              07/13/2017 00:02:37 PAGE 2   
+
+  49   2                      // -----------------------------------------------------------------------------
+  50   2                      // Performs all scanning and data structure updates
+  51   2                      // -----------------------------------------------------------------------------
+  52   2                      CSLIB_update();
+  53   2      
+  54   2      // [Generated Run-time code]$
+  55   2                      TouchyButtonRefresh();
+  56   2      
+  57   2                      levelOffset = TouchyReadSliderRelative();
+  58   2      
+  59   2                      if (TouchySleepNow()) {
+  60   3                              TouchySleepLEDs();
+  61   3                      }
+  62   2                      else {
+  63   3                              // check button 1, if it's active we increment our counter so we can
+  64   3                              //  eventually break out of whatever mode we're in and revert to the main menu
+  65   3                              if (TouchyReadButtons() & BUTTON1) {
+  66   4                                      breakawayCounter++;
+  67   4      
+  68   4                                      if (breakawayCounter > BREAKAWAY_CYCLES) {
+  69   5                                              breakawayCounter = 0;
+  70   5                                              fidgetMode = 7;
+  71   5                                              TouchyLEDOff(LED1 | LED2 | LED3 | LED4 | LED5 | LED6);
+  72   5                                      }
+  73   4                              }
+  74   3                              else {
+  75   4                                      breakawayCounter = 0;
+  76   4                              }
+  77   3      
+  78   3                              switch (fidgetMode) {
+  79   4                              case 1:
+  80   4                                      TouchySetLEDs(TouchyReadButtons());
+  81   4      
+  82   4                                      break;
+  83   4      
+  84   4                              case 2:
+  85   4                                      levelOffset /= 32;
+  86   4                                      ledIntensity += levelOffset;
+  87   4      
+  88   4                                      if (levelOffset) {
+  89   5                                              TouchySetLEDIntensity(LED1, ledIntensity);
+  90   5                                              TouchySetLEDIntensity(LED6, 255-ledIntensity);
+  91   5                                      }
+  92   4      
+  93   4                                      TouchyLEDToggle(TouchyGetPressedButtons() & (LED2 | LED3 | LED4 | LED5));
+  94   4      
+  95   4                                      if (TouchyGetPressedButtons() & BUTTON1) {
+  96   5                                              TouchyLEDToggle(LED1 | LED2 | LED3 | LED4 | LED5 | LED6);
+  97   5                                      }
+  98   4      
+  99   4                                      if (TouchyGetPressedButtons() & BUTTON6) {
+ 100   5                                              if (TouchyReadLEDs()) {
+ 101   6                                                      TouchyLEDOff(LED1 | LED2 | LED3 | LED4 | LED5 | LED6);
+ 102   6                                              }
+ 103   5                                              else {
+ 104   6                                                      TouchyLEDOn(LED1 | LED2 | LED3 | LED4 | LED5 | LED6);
+ 105   6                                              }
+ 106   5                                      }
+ 107   4                                      break;
+ 108   4      
+ 109   4                              case 3:
+ 110   4                                      TouchyLEDToggle(TouchyGetPressedButtons());
+ 111   4      
+C51 COMPILER V9.53.0.0   MAIN                                                              07/13/2017 00:02:37 PAGE 3   
+
+ 112   4                                      ledState = TouchyReadLEDs();
+ 113   4      
+ 114   4                                      if (levelOffset > 0) {
+ 115   5                                              ledState = ledState << 1;
+ 116   5                                      }
+ 117   4                                      if (levelOffset < 0) {
+ 118   5                                              ledState = ledState >> 1;
+ 119   5                                      }
+ 120   4      
+ 121   4                                      if (levelOffset) {
+ 122   5                                              TouchySetLEDs(ledState);
+ 123   5                                      }
+ 124   4                                      break;
+ 125   4      
+ 126   4                              case 4:
+ 127   4                                      if (levelOffset > 0 && movementRate < MAX_SPEED) {
+ 128   5                                              movementRate++;
+ 129   5                                      }
+ 130   4                                      if (levelOffset < 0 && movementRate > -MAX_SPEED) {
+ 131   5                                              movementRate--;
+ 132   5                                      }
+ 133   4      
+ 134   4                                      ledState = TouchyReadLEDs();
+ 135   4      
+ 136   4                                      if (movementTimer++ > MAX_SPEED - abs(movementRate)) {
+ 137   5                                              movementTimer = 0;
+ 138   5      
+ 139   5                                              if (movementRate > 0) {
+ 140   6                                                      ledState = ledState << 1;
+ 141   6                                              }
+ 142   5                                              if (movementRate < 0) {
+ 143   6                                                      ledState = ledState >> 1;
+ 144   6                                              }
+ 145   5                                      }
+ 146   4      
+ 147   4                                      ledState |= TouchyReadButtons();
+ 148   4      
+ 149   4                                      TouchySetLEDs(ledState);
+ 150   4      
+ 151   4                                      break;
+ 152   4      
+ 153   4                              case 5:
+ 154   4                                      if (TouchyReadButtons() || IsTouchQualified()) {
+ 155   5                                              ledIntensity++;
+ 156   5                                      }
+ 157   4                                      if (levelOffset || TouchyGetPressedButtons()) {
+ 158   5                                              ledIntensity += TouchyReadSlider() + movementRate;
+ 159   5      
+ 160   5                                              TouchySetLEDs(ledIntensity);
+ 161   5                                      }
+ 162   4                                      break;
+ 163   4      
+ 164   4                              case 6:
+ 165   4                                      levelOffset /= 32;
+ 166   4                                      ledIntensity += levelOffset;
+ 167   4                                      ledIntensity |= TouchyGetPressedButtons();
+ 168   4      
+ 169   4                                      if (levelOffset || TouchyGetPressedButtons()) {
+ 170   5                                              TouchySetLEDs(ledIntensity);
+ 171   5                                      }
+ 172   4                                      break;
+ 173   4      
+ 174   4                              case 7:
+C51 COMPILER V9.53.0.0   MAIN                                                              07/13/2017 00:02:37 PAGE 4   
+
+ 175   4                                      if (TouchyReadButtons()) {
+ 176   5                                              TouchyLEDToggle(LED1 | LED2 | LED3 | LED4 | LED5 | LED6);
+ 177   5                                              SimpleDelay(25);
+ 178   5                                      }
+ 179   4                                      else {
+ 180   5                                              fidgetMode = 0;
+ 181   5                                      }
+ 182   4                                      break;
+ 183   4      
+ 184   4                              default:
+ 185   4                                      levelOffset /= 16;
+ 186   4      
+ 187   4                                      if (sliderLevel + levelOffset > 254) {
+ 188   5                                              sliderLevel = 255;
+ 189   5                                      }
+ 190   4                                      else if (sliderLevel + levelOffset < 1) {
+ 191   5                                              sliderLevel = 0;
+ 192   5                                      }
+ 193   4                                      else {
+ 194   5                                              sliderLevel += levelOffset;
+ 195   5                                      }
+ 196   4      
+ 197   4                                      // we need six regions, so 256 / 6 ...but we have to cheat a little because integers
+ 198   4                                      selectedMode = sliderLevel / (258 / 6);
+ 199   4      
+ 200   4                                      TouchySetLEDs(1 << selectedMode);
+ 201   4      
+ 202   4                                      if (TouchyReadButtons() & BUTTON1) {
+ 203   5                                              fidgetMode = selectedMode + 1;
+ 204   5                                      }
+ 205   4                                      break;
+ 206   4                              }
+ 207   3                      }
+ 208   2              }
+ 209   1      }
+ 210          
+ 211          
+ 212          // Create a simple delay
+ 213          void SimpleDelay(uint32_t delayLen)
+ 214          {
+ 215   1              volatile uint32_t i = 0;
+ 216   1      
+ 217   1              for (i = 0; i < delayLen; i++)
+ 218   1              {
+ 219   2              }
+ 220   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    692    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      17
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

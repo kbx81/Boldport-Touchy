@@ -1,0 +1,62 @@
+C51 COMPILER V9.53.0.0   SENSOR_DESCRIPTORS                                                07/12/2017 22:27:34 PAGE 1   
+
+
+C51 COMPILER V9.53.0.0, COMPILATION OF MODULE SENSOR_DESCRIPTORS
+OBJECT MODULE PLACED IN .\lib\efm8sb1\cslib\serial_interface\sensor_descriptors.OBJ
+COMPILER INVOKED BY: c:\SiliconLabs\SimplicityStudio\v4\developer\toolchains\keil_8051\9.53\BIN\C51.exe C:\Users\kburzin
+                    -ski\SimplicityStudio\v4_workspace\BoldportTouchyFidgetFirmware\lib\efm8sb1\cslib\serial_interface\sensor_descriptors.c O
+                    -MF2 SMALL DEBUG OBJECTEXTEND ROM(LARGE) WARNINGLEVEL(2) FLOATFUZZY(3) OPTIMIZE(8,SPEED) DEFINE(DEBUG=1) INTVECTOR(0X0000
+                    -) INTPROMOTE INCDIR(C:\Users\kburzinski\SimplicityStudio\v4_workspace\BoldportTouchyFidgetFirmware\inc\config;C:/Users/k
+                    -burzinski/SimplicityStudio/v4_workspace/BoldportTouchyFidgetFirmware/inc;C:/SiliconLabs/SimplicityStudio/v4/developer/sd
+                    -ks/8051/v4.0.4//Device/shared/si8051base;C:/SiliconLabs/SimplicityStudio/v4/developer/sdks/8051/v4.0.4//Device/EFM8SB1/i
+                    -nc;C:/SiliconLabs/SimplicityStudio/v4/developer/sdks/8051/v4.0.4//Lib/efm8_capsense;C:/SiliconLabs/SimplicityStudio/v4/d
+                    -eveloper/sdks/8051/v4.0.4//Device/EFM8SB1/efm8_capsense/device_layer) PRINT(.\lib\efm8sb1\cslib\serial_interface\sensor_
+                    -descriptors.lst) COND PAGEWIDTH(120) PAGELENGTH(65) OBJECT(.\lib\efm8sb1\cslib\serial_interface\sensor_descriptors.OBJ)
+
+line level    source
+
+   1          /**************************************************************************//**
+   2           * Copyright (c) 2015 by Silicon Laboratories Inc. All rights reserved.
+   3           *
+   4           * http://developer.silabs.com/legal/version/v11/Silicon_Labs_Software_License_Agreement.txt
+   5           *****************************************************************************/
+   6          
+   7          #include "cslib_config.h"
+   8          #include <si_toolchain.h>
+   9          #include <stdio.h>
+  10          #include "cslib_sensor_descriptors.h"
+  11          
+  12          code char* sensorDescriptors[DEF_NUM_SENSORS] =
+  13          {
+  14           SENSOR_DESCRIPTOR_LIST
+  15          };
+  16          
+  17          void outputsensorDescriptors(void)
+  18          {
+  19   1         uint8_t index;
+  20   1         printf("*SENSOR_DESCRIPTORS ");
+  21   1         for(index = 0; index < DEF_NUM_SENSORS; index++)
+  22   1         {
+  23   2            printf("%s | ",sensorDescriptors[index]);
+  24   2         }
+  25   1         printf("\n");
+  26   1      }
+  27          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     70    ----
+   CONSTANT SIZE    =    110    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       1
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
