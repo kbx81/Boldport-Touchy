@@ -154,7 +154,7 @@ int main(void) {
 				if (TouchyReadButtons() || IsTouchQualified()) {
 					ledIntensity++;
 				}
-				if (levelOffset || TouchyGetPressedButtons()) {
+				if (levelOffset || TouchyGetChangedButtons()) {
 					ledIntensity += TouchyReadSlider() + movementRate;
 
 					TouchySetLEDs(ledIntensity);
