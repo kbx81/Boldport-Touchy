@@ -4,7 +4,7 @@
 <ul>
 <li>Use wheel to select mode. LEDs indicate mode. LEDs stop at ends</li>
 <li>Tap button one to engage selected mode</li>
-<li>Press and hold button one to return to this level/menu</li>
+<li>Press and hold button one until all LEDs blink simultaneously to return to this level/menu</li>
 </ul>
 
 ## Mode 1 - Bump Mode:
