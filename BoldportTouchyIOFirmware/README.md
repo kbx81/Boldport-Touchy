@@ -19,7 +19,7 @@ When reading/receiving from Touchy with this firmware, four bytes will be sent a
  - Byte 0:
    - Bit 7 always set
    - Bit 6 set if Touchy received a (re)transmit request
-   - Bit 5 set if Touchy received invalid data (RX error) -- host should write the data again. This occurs when bit 7 of byte 0 is not set; the idea is to help ensure the bits are all lined up just right.
+   - Bit 5 set if Touchy received invalid data (RX error) -- host should write the data again. This occurs when bit 7 of byte 0 is not set in the last packet that Touchy received; the idea is to help ensure the bits are all lined up just right.
  - Byte 1: Status of buttons. Bits 0 through 5 correspond to buttons 1 through 6, respectively. A set bit means the corresponding button is pressed.
  - Byte 2: MSB of angle of circle slider...
  - Byte 3: LSB of angle of circle slider. Range of slider is 0 to 359 degrees.
