@@ -1,0 +1,1133 @@
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/20/2017 23:18:05 PAGE 1   
+
+
+C51 COMPILER V9.53.0.0, COMPILATION OF MODULE LOW_POWER_CONFIG
+OBJECT MODULE PLACED IN .\lib\efm8sb1\cslib\device_layer\low_power_config.OBJ
+COMPILER INVOKED BY: c:\SiliconLabs\SimplicityStudio\v4\developer\toolchains\keil_8051\9.53\BIN\C51.exe C:\Users\kburzin
+                    -ski\SimplicityStudio\v4_workspace\BoldportTouchyIOFirmware\lib\efm8sb1\cslib\device_layer\low_power_config.c OMF2 SMALL 
+                    -DEBUG OBJECTEXTEND ROM(LARGE) WARNINGLEVEL(2) FLOATFUZZY(3) OPTIMIZE(8,SPEED) DEFINE(DEBUG=1) INTVECTOR(0X0000) INTPROMO
+                    -TE INCDIR(C:\Users\kburzinski\SimplicityStudio\v4_workspace\BoldportTouchyIOFirmware\inc\config;C:/Users/kburzinski/Simp
+                    -licityStudio/v4_workspace/BoldportTouchyIOFirmware/inc;C:/SiliconLabs/SimplicityStudio/v4/developer/sdks/8051/v4.0.4//De
+                    -vice/shared/si8051base;C:/SiliconLabs/SimplicityStudio/v4/developer/sdks/8051/v4.0.4//Device/EFM8SB1/inc;C:/SiliconLabs/
+                    -SimplicityStudio/v4/developer/sdks/8051/v4.0.4//Lib/efm8_capsense;C:/SiliconLabs/SimplicityStudio/v4/developer/sdks/8051
+                    -/v4.0.4//Device/EFM8SB1/efm8_capsense/device_layer) PRINT(.\lib\efm8sb1\cslib\device_layer\low_power_config.lst) COND PA
+                    -GEWIDTH(120) PAGELENGTH(65) OBJECT(.\lib\efm8sb1\cslib\device_layer\low_power_config.OBJ)
+
+line level    source
+
+   1          /**************************************************************************//**
+   2           * Copyright (c) 2015 by Silicon Laboratories Inc. All rights reserved.
+   3           *
+   4           * http://developer.silabs.com/legal/version/v11/Silicon_Labs_Software_License_Agreement.txt
+   5           *****************************************************************************/
+   6          
+   7          #include <si_toolchain.h>
+   8          #include "cslib.h"
+   9          #include "cslib_config.h"
+  10          #include "low_power_hardware.h"
+  11          
+  12          #include "SI_EFM8SB1_Defs.h"
+  13          #include "low_power_config.h"
+  14          #include "cslib_hwconfig.h"
+  15          xdata uint8_t timerTick = 0;
+  16          
+  17          
+  18          //-----------------------------------------------------------------------------
+  19          // Local function prototypes
+  20          //-----------------------------------------------------------------------------
+  21          void RTC_init (void);
+  22          void LPM_init (void);
+  23          void RTC_setAlarmPeriod(uint16_t alarm_frequency);
+  24          uint8_t RTC_read (uint8_t reg);
+  25          void RTC_write (uint8_t reg, uint8_t value);
+  26          void RTC_writeAlarm (uint32_t alarm);
+  27          void RTC0CN_setBits(uint8_t bits);
+  28          void RTC0CN_clearBits(uint8_t bits);
+  29          void RTC_zeroCurrentTime(void);
+  30          void configureRTCActiveMode(void);
+  31          void configureRTCSleepMode(void);
+  32          uint8_t updateRTCFlags(void);
+  33          void configureCS0SleepMode(void);
+  34          void configurePortsSleepMode(void);
+  35          
+  36          
+  37          //-----------------------------------------------------------------------------
+  38          // File-scope variables
+  39          //-----------------------------------------------------------------------------
+  40          // Variables used for the RTC interface
+  41          
+  42          // Holds the desired RTC0CN settings
+  43          SI_SEGMENT_VARIABLE(RTC_RTC0CNLocal, uint8_t, SI_SEG_DATA);
+  44          
+  45          SI_SEGMENT_VARIABLE(RTC_clkFreq, uint16_t, SI_SEG_XDATA);
+  46          
+  47          // Variables used for the RTC interface
+  48          uint8_t PMU_PMU0CFLocal;                       // Holds the desired Wake-up sources
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/20/2017 23:18:05 PAGE 2   
+
+  49          
+  50          // Define Wake-Up Flags
+  51          uint8_t RTC_alarm;
+  52          uint8_t RTC_failure;
+  53          uint8_t Comp_wakeup;
+  54          uint8_t PM_wakeup;
+  55          
+  56          typedef struct
+  57          {
+  58             uint8_t CLKSELsave;
+  59             uint8_t P0MDINsave;
+  60             uint8_t P1MDIN_save;
+  61             uint8_t XBR1save;
+  62          } SaveStateStruct_t;
+  63          
+  64          xdata SaveStateStruct_t registerSaveState;
+  65          //-----------------------------------------------------------------------------
+  66          // Implementation-dependent functions called by LowPowerRoutines.c
+  67          //-----------------------------------------------------------------------------
+  68          
+  69          void readyRegistersForSleep(void)
+  70          {
+  71   1         uint8_t SFRPAGEsave = SFRPAGE;
+  72   1      
+  73   1         SFRPAGE = LEGACY_PAGE;
+  74   1      
+  75   1      
+  76   1         registerSaveState.CLKSELsave = CLKSEL;
+  77   1         CLKSEL = 0x14;
+  78   1         while (!(CLKSEL & 0x80));
+  79   1      
+  80   1         registerSaveState.P0MDINsave = P0MDIN;
+  81   1         registerSaveState.P1MDIN_save = P1MDIN;
+  82   1         registerSaveState.XBR1save = XBR1;
+  83   1      
+  84   1         P0MDIN = 0x00;
+  85   1         P1MDIN = 0x00;
+  86   1      
+  87   1         XBR1 = 0xC0;
+  88   1      
+  89   1         SFRPAGE = SFRPAGEsave;
+  90   1      }
+  91          void restoreRegistersFromSleep(void)
+  92          {
+  93   1         uint8_t SFRPAGEsave = SFRPAGE;
+  94   1         SFRPAGE = LEGACY_PAGE;
+  95   1      
+  96   1         CLKSEL = registerSaveState.CLKSELsave;
+  97   1         while (!(CLKSEL & 0x80));
+  98   1      
+  99   1         P0MDIN = registerSaveState.P0MDINsave;
+ 100   1         P1MDIN = registerSaveState.P1MDIN_save;
+ 101   1         XBR1 = registerSaveState.XBR1save;
+ 102   1         SFRPAGE = SFRPAGEsave;
+ 103   1      }
+ 104          //-----------------------------------------------------------------------------
+ 105          // enterLowPowerState
+ 106          //-----------------------------------------------------------------------------
+ 107          //
+ 108          // Enter low power sleep mode.
+ 109          //
+ 110          void enterLowPowerState(void)
+ 111          {
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/20/2017 23:18:05 PAGE 3   
+
+ 112   1         readyRegistersForSleep();
+ 113   1      
+ 114   1         // Enable the Flash read one-shot timer
+ 115   1         FLSCL &= ~BYPASS;                   // Clear the one-shot bypass bit
+ 116   1      
+ 117   1      //   FLWR  =   NON_ZERO;                 // Write a "dummy" value to FLWR
+ 118   1      
+ 119   1         // Verify that the system clock setting has been applied
+ 120   1         while(!(CLKSEL & 0x80));            // Wait until CLKRDY -> 1
+ 121   1      
+ 122   1         PMU0CFconfig(SLEEP | RTC);   // Enter Sleep Until Next Event
+ 123   1      
+ 124   1         // Disable (Bypass) the Flash Read one-shot timer if the system clock
+ 125   1      
+ 126   1         FLSCL |= BYPASS;                 // Set the one-shot bypass bit
+ 127   1      
+ 128   1         updateRTCFlags();             // This call will clear the alarm flag
+ 129   1         restoreRegistersFromSleep();
+ 130   1      }
+ 131          
+ 132          //-----------------------------------------------------------------------------
+ 133          // Implementation-dependent functions called by LowPowerRoutines.c
+ 134          //-----------------------------------------------------------------------------
+ 135          //-----------------------------------------------------------------------------
+ 136          // configureTimerForActiveMode
+ 137          //-----------------------------------------------------------------------------
+ 138          //
+ 139          // This is a top-level call to configure the timer to active mode, one of the
+ 140          // two defined modes of operation in the system.  This instance of the function
+ 141          // configures the SmaRTClock to the frequency defined in cslib_config.h.
+ 142          //
+ 143          void configureTimerForActiveMode(void)
+ 144          {
+ 145   1         configureRTCActiveMode();
+ 146   1      }
+ 147          
+ 148          
+ 149          
+ 150          //-----------------------------------------------------------------------------
+ 151          // checkTimer
+ 152          //-----------------------------------------------------------------------------
+ 153          //
+ 154          // Top-level call into an abstracted timer.  This function is in charge
+ 155          // of setting the timerTick variable whenever a configured amount of time
+ 156          // passes according to the timer being used.
+ 157          // This instance of the checkTimer() routine uses the SmaRTClock through
+ 158          // a call to UPdateRTCFlags(), which returns TRUE if the configured
+ 159          // elapsed time has passed.
+ 160          //
+ 161          void checkTimer(void)
+ 162          {
+ 163   1      
+ 164   1         if(updateRTCFlags())
+ 165   1         {
+ 166   2            timerTick = 1;                   // Checked and cleared in low power code
+ 167   2         }
+ 168   1      }
+ 169          
+ 170          
+ 171          //-----------------------------------------------------------------------------
+ 172          // configureSensorForSleepMode
+ 173          //-----------------------------------------------------------------------------
+ 174          //
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/20/2017 23:18:05 PAGE 4   
+
+ 175          // This is a top-level call to configure the sensor to its operational state
+ 176          // during sleep mode.
+ 177          //
+ 178          void configureSensorForSleepMode(void)
+ 179          {
+ 180   1         configurePortsSleepMode();
+ 181   1         configureCS0SleepMode();
+ 182   1      }
+ 183          
+ 184          
+ 185          //-----------------------------------------------------------------------------
+ 186          // configureTimerForSleepMode
+ 187          //-----------------------------------------------------------------------------
+ 188          //
+ 189          // This is a top-level call to configure the timer to sleep mode, one of the
+ 190          // two defined modes of operation in the system.  This instance of the function
+ 191          // configures the SmaRTClock to the frequency defined in cslib_config.h.
+ 192          //
+ 193          void configureTimerForSleepMode(void)
+ 194          {
+ 195   1         configureRTCSleepMode();
+ 196   1      }
+ 197          
+ 198          //-----------------------------------------------------------------------------
+ 199          // configurePortsSleepMode
+ 200          //-----------------------------------------------------------------------------
+ 201          //
+ 202          // This is a low-level local routine to handle configuration of the ports
+ 203          // for active mode.  It configures the analog pins to select
+ 204          // channels that are bound to a single sensor input.
+ 205          //
+ 206          void configurePortsSleepMode(void)
+ 207          {
+ 208   1         P0MDIN |= ACTIVE_MODE_MASK_P0;
+ 209   1         P1MDIN |= ACTIVE_MODE_MASK_P1;
+ 210   1         P0MDIN &= ~SLEEP_MODE_MASK_P0;
+ 211   1         P1MDIN &= ~SLEEP_MODE_MASK_P1;
+ 212   1      }
+ 213          
+ 214          
+ 215          
+ 216          //-----------------------------------------------------------------------------
+ 217          // configureCS0SleepMode
+ 218          //-----------------------------------------------------------------------------
+ 219          //
+ 220          // This is a low-level local routine to handle configuration of the ports
+ 221          // for active mode.
+ 222          //
+ 223          void configureCS0SleepMode(void)
+ 224          {
+ 225   1      
+ 226   1              CS0CN0 = 0x88;                       // Enable CS0, Enable Digital Comparator
+ 227   1                                             // Clear CS0INT, Clear CS0CMPF
+ 228   1         // Bind channels
+ 229   1         // Bind channels and take threshold of entire slider
+ 230   1         CS0SCAN0 = SLEEP_MODE_MASK_P0;
+ 231   1         CS0SCAN1 = SLEEP_MODE_MASK_P1;      // Bind channels 1.1 and 1.0
+ 232   1      
+ 233   1         CS0CF  = 0x8A;                      // Enable binding and enable channel masking, 8x oversample
+ 234   1         CS0MD1 &= ~0x07;                    // Clear Gain Field
+ 235   1         CS0MD1  |= 0x02;                    // Set Gain to 3X
+ 236   1         CS0MD2 = 0x00;                      // 12-bit mode
+ 237   1      }
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/20/2017 23:18:05 PAGE 5   
+
+ 238          
+ 239          
+ 240          //-----------------------------------------------------------------------------
+ 241          // configureRTCSleepMode
+ 242          //-----------------------------------------------------------------------------
+ 243          //
+ 244          // Initialize the SmaRTClock to overflow at the frequency specified in
+ 245          // cslib_config.h.
+ 246          //
+ 247          void configureRTCSleepMode(void)
+ 248          {
+ 249   1         LPM_init ();                        // Initialize Power Management Unit
+ 250   1         RTC_init ();                        // Initialize SmaRTClock
+ 251   1      
+ 252   1         RTC_setAlarmPeriod(CSLIB_sleepModePeriod); // Set the Alarm Frequency to 25 Hz
+ 253   1         RTC0CN_setBits(RTC0TR+RTC0AEN+ALRM);// Enable Counter, Alarm, and Auto-Reset
+ 254   1      }
+ 255          
+ 256          //-----------------------------------------------------------------------------
+ 257          // configureRTCActiveMode
+ 258          //-----------------------------------------------------------------------------
+ 259          //
+ 260          // Initialize the SmaRTClock to overflow at the frequency specified in
+ 261          // cslib_config.h.
+ 262          //
+ 263          void configureRTCActiveMode(void)
+ 264          {
+ 265   1         LPM_init ();                        // Initialize Power Management Unit
+ 266   1         RTC_init ();                        // Initialize SmaRTClock
+ 267   1      
+ 268   1         RTC_setAlarmPeriod(CSLIB_activeModePeriod); // Set the Alarm Frequency to 25 Hz
+ 269   1         RTC0CN_setBits(RTC0TR+RTC0AEN+ALRM);// Enable Counter, Alarm, and Auto-Reset
+ 270   1      
+ 271   1      }
+ 272          
+ 273          
+ 274          //-----------------------------------------------------------------------------
+ 275          // configureRTCActiveMode
+ 276          //-----------------------------------------------------------------------------
+ 277          //
+ 278          // Reads all potential wake-up sources.  Only the alarm is communicated
+ 279          // to upper levels because this is the flag that indicates when
+ 280          // the sleep/active mode state machine needs to take action.
+ 281          //
+ 282          uint8_t updateRTCFlags(void)
+ 283          {
+ 284   1         uint8_t PMU0CFstate, b;
+ 285   1         PMU0CFstate = PMU0CF_get();
+ 286   1         // Check for an RTC Alarm
+ 287   1         if((PMU0CFstate & RTCAWK))
+ 288   1         {
+ 289   2            RTC_alarm = 1;
+ 290   2         }
+ 291   1         // Check for an RTC Clock Failure
+ 292   1         if((PMU0CFstate & RTCFWK))
+ 293   1         {
+ 294   2            RTC_failure = 1;
+ 295   2         }
+ 296   1         // Check for a Port Match Wakeup
+ 297   1         if(PMU0CFstate & PMATWK)
+ 298   1         {
+ 299   2            PM_wakeup = 1;
+ 300   2         }
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/20/2017 23:18:05 PAGE 6   
+
+ 301   1         // Check for a reset pin Wakeup
+ 302   1         if(PMU0CFstate & RSTWK)
+ 303   1         {
+ 304   2            // Delay greater than 15uS per datasheet recommendation
+ 305   2            b = 255;
+ 306   2            while(b > 0) b--;
+ 307   2         }
+ 308   1      
+ 309   1         PMU0CFconfig(CLEAR);
+ 310   1      
+ 311   1         if(RTC_alarm)
+ 312   1         {
+ 313   2            RTC_alarm = 0;
+ 314   2            return 1;
+ 315   2         }
+ 316   1         else
+ 317   1         {
+ 318   2            return 0;
+ 319   2         }
+ 320   1      }
+ 321          
+ 322          // LPM_init ()
+ 323          //-----------------------------------------------------------------------------
+ 324          //
+ 325          // Return Value : None
+ 326          // Parameters   : None
+ 327          //
+ 328          // This function will initialize the low power functionality
+ 329          //
+ 330          //-----------------------------------------------------------------------------
+ 331          void LPM_init (void)
+ 332          {
+ 333   1        PMU0CFconfig(CLEAR);
+ 334   1        PMU_PMU0CFLocal = 0;
+ 335   1        RTC_alarm = 0;
+ 336   1        RTC_failure = 0;
+ 337   1        Comp_wakeup = 0;
+ 338   1        PM_wakeup = 0;
+ 339   1      }
+ 340          
+ 341          //-----------------------------------------------------------------------------
+ 342          // RTC_init ()
+ 343          //-----------------------------------------------------------------------------
+ 344          //
+ 345          // Return Value : None
+ 346          // Parameters   : None
+ 347          //
+ 348          // This function will initialize the smaRTClock.
+ 349          //
+ 350          //-----------------------------------------------------------------------------
+ 351          void RTC_init (void)
+ 352          {
+ 353   1         uint16_t i;
+ 354   1         static uint8_t configured = 0;
+ 355   1      
+ 356   1         uint8_t CLKSEL_SAVE = CLKSEL;
+ 357   1      
+ 358   1         if(configured) return;
+ 359   1      
+ 360   1         // If the interface is locked
+ 361   1         if(RTC0KEY == 0x00)
+ 362   1         {
+ 363   2            RTC0KEY = 0xA5;                  // Unlock the smaRTClock interface
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/20/2017 23:18:05 PAGE 7   
+
+ 364   2            RTC0KEY = 0xF1;
+ 365   2         }
+ 366   1      
+ 367   1         //----------------------------------------
+ 368   1         // Configure the SmaRTClock to crystal
+ 369   1         // or self-oscillate mode
+ 370   1         //----------------------------------------
+ 371   1      
+ 372   1         #if(RTC_CLKSRC == CRYSTAL)
+              
+                    RTC_write (RTC0XCN, 0x60);       // Configure the smaRTClock
+                                                     // oscillator for crystal mode
+                                                     // Bias Doubling Enabled
+                                                     // AGC Disabled
+              
+                    RTC_write (RTC0XCF, 0x83);       // Enable Automatic Load Capacitance
+                                                     // stepping and set the desired
+                                                     // load capacitance to 4.5pF plus
+                                                     // the stray PCB capacitance
+              
+                 #elif(RTC_CLKSRC == SELFOSC)
+ 385   1      
+ 386   1            // Configure smaRTClock to self-oscillate mode with bias X2 disabled
+ 387   1            RTC_write (RTC0XCN, 0x08);
+ 388   1      
+ 389   1            // Disable Auto Load Cap Stepping
+ 390   1            RTC_write (RTC0XCF, (0x00 | LOADCAP_VALUE));
+ 391   1      
+ 392   1         #endif
+ 393   1      
+ 394   1         RTC_write (RTC0CN, 0x80);           // Enable smaRTClock oscillator
+ 395   1      
+ 396   1         CLKSEL    =  0x74;                  // Switch to 156 kHz low power
+ 397   1                                             // internal oscillator
+ 398   1      
+ 399   1         //----------------------------------------
+ 400   1         // Wait for crystal to start
+ 401   1         // No need to wait in self-oscillate mode
+ 402   1         //----------------------------------------
+ 403   1      
+ 404   1         #if(RTC_CLKSRC == CRYSTAL)
+              
+                    // Wait > 20 ms
+                    for (i=0x550; i!=0; i--);
+              
+                    // Wait for smaRTClock valid
+                    while ((RTC_read (RTC0XCN) & 0x10)== 0x00);
+              
+                    // Wait for Load Capacitance Ready
+                    while ((RTC_read (RTC0XCF) & 0x40)== 0x00);
+              
+                    RTC_write (RTC0XCN, 0xC0);          // Enable Automatic Gain Control
+                                                        // and disable bias doubling
+              
+                 #endif
+ 419   1      
+ 420   1         RTC_write (RTC0CN, 0xC0);           // Enable missing smaRTClock detector
+ 421   1                                             // and leave smaRTClock oscillator
+ 422   1                                             // enabled.
+ 423   1      
+ 424   1         // Wait > 2 ms
+ 425   1         for (i=0x540; i!=0; i--);
+ 426   1      
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/20/2017 23:18:05 PAGE 8   
+
+ 427   1         RTC_write (RTC0CN, 0xC0);           // Clear the clock fail flag (precautionary).
+ 428   1      
+ 429   1         PMU0CF = 0x20;                      // Clear PMU wake-up source flags
+ 430   1      
+ 431   1         CLKSEL = CLKSEL_SAVE;               // Restore system clock
+ 432   1         while(!(CLKSEL & 0x80));            // Poll CLKRDY
+ 433   1      
+ 434   1         RTC_RTC0CNLocal = 0xC0;                // Initialize Local Copy of RTC0CN
+ 435   1         configured = 1;
+ 436   1      }
+ 437          
+ 438          //-----------------------------------------------------------------------------
+ 439          // RTC_read ()
+ 440          //-----------------------------------------------------------------------------
+ 441          //
+ 442          // Return Value : RTC0DAT
+ 443          // Parameters   : 1) uint8_t reg - address of RTC register to read
+ 444          //
+ 445          // This function will read one byte from the specified RTC register.
+ 446          // Using a register number greater that 0x0F is not permited.
+ 447          //
+ 448          //  Timing of SmaRTClock register read with short bit set
+ 449          //
+ 450          //     mov      RTC0ADR, #094h
+ 451          //     nop
+ 452          //     nop
+ 453          //     nop
+ 454          //     mov      A, RTC0DAT
+ 455          //
+ 456          //-----------------------------------------------------------------------------
+ 457          uint8_t RTC_read (uint8_t reg)
+ 458          {
+ 459   1      
+ 460   1         RTC0ADR  = (0x90 | reg);            // pick register and set BUSY to
+ 461   1                                             // initiate the read
+ 462   1      
+ 463   1         NOP(); NOP(); NOP();                // delay 3 system clocks
+ 464   1      
+ 465   1         return RTC0DAT;                     // return value
+ 466   1      }
+ 467          
+ 468          //-----------------------------------------------------------------------------
+ 469          // RTC_write ()
+ 470          //-----------------------------------------------------------------------------
+ 471          //
+ 472          // Return Value : none
+ 473          // Parameters   : 1) uint8_t reg - address of RTC register to write
+ 474          //                2) uint8_t value - the value to write to <reg>
+ 475          //
+ 476          // This function will Write one byte to the specified RTC register.
+ 477          // Using a register number greater that 0x0F is not permited.
+ 478          //
+ 479          // Timing of SmaRTClock register write with short bit set
+ 480          //
+ 481          //       mov      RTC0ADR, #014h
+ 482          //       mov      RTC0DAT, #088h
+ 483          //       nop
+ 484          //
+ 485          //-----------------------------------------------------------------------------
+ 486          void RTC_write (uint8_t reg, uint8_t value)
+ 487          {
+ 488   1         RTC0ADR  = (0x10 | reg);            // pick register
+ 489   1         RTC0DAT = value;                    // write data
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/20/2017 23:18:05 PAGE 9   
+
+ 490   1      }
+ 491          
+ 492          //-----------------------------------------------------------------------------
+ 493          // RTC_writeAlarm ()
+ 494          //-----------------------------------------------------------------------------
+ 495          //
+ 496          // Return Value : none
+ 497          // Parameters   : 1) uint32_t alarm - the value to write to <ALARM>
+ 498          //
+ 499          // This function writes a value to the <ALRM> registers
+ 500          //
+ 501          // Instruction timing of multi-byte write with short bit set
+ 502          //
+ 503          //       mov      RTC0ADR, #010h
+ 504          //       mov      RTC0DAT, #05h
+ 505          //       nop
+ 506          //       mov      RTC0DAT, #06h
+ 507          //       nop
+ 508          //       mov      RTC0DAT, #07h
+ 509          //       nop
+ 510          //       mov      RTC0DAT, #08h
+ 511          //       nop
+ 512          //
+ 513          //-----------------------------------------------------------------------------
+ 514          
+ 515          void RTC_writeAlarm (uint32_t alarm)
+ 516          {
+ 517   1         SI_UU32_t alarm_value;
+ 518   1      
+ 519   1         alarm_value.u32 = alarm;
+ 520   1      
+ 521   1         // Temporarily disable alarm while updating registers
+ 522   1         RTC0ADR = (0x10 | RTC0CN);
+ 523   1         RTC0DAT = (RTC_RTC0CNLocal & ~RTC0AEN);
+ 524   1         NOP();
+ 525   1      
+ 526   1         // Write the value to the alarm registers
+ 527   1         RTC0ADR = (0x10 | ALARM0);
+ 528   1         RTC0DAT = alarm_value.u8[B0];    // write data
+ 529   1         NOP();
+ 530   1         RTC0DAT = alarm_value.u8[B1];    // write data
+ 531   1         NOP();
+ 532   1         RTC0DAT = alarm_value.u8[B2];    // write data
+ 533   1         NOP();
+ 534   1         RTC0DAT = alarm_value.u8[B3];    // write data
+ 535   1         NOP();
+ 536   1      
+ 537   1         // Restore alarm state after registers have been written
+ 538   1         RTC0ADR = (0x10 | RTC0CN);
+ 539   1         RTC0DAT = RTC_RTC0CNLocal;
+ 540   1      }
+ 541          
+ 542          //-----------------------------------------------------------------------------
+ 543          // RTC_GetCurrentTime()
+ 544          //-----------------------------------------------------------------------------
+ 545          //
+ 546          // Return Value : uint32_t value - the value of the SmaRTClock
+ 547          // Parameters   : none
+ 548          //
+ 549          // This function reads the current value of the SmaRTClock
+ 550          //
+ 551          // Instruction timing of multi-byte read with short bit set
+ 552          //
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/20/2017 23:18:05 PAGE 10  
+
+ 553          //       mov      RTC0ADR, #0d0h
+ 554          //       nop
+ 555          //       nop
+ 556          //       nop
+ 557          //       mov      A, RTC0DAT
+ 558          //       nop
+ 559          //       nop
+ 560          //       mov      A, RTC0DAT
+ 561          //       nop
+ 562          //       nop
+ 563          //       mov      A, RTC0DAT
+ 564          //       nop
+ 565          //       nop
+ 566          //       mov      A, RTC0DAT
+ 567          //
+ 568          //-----------------------------------------------------------------------------
+ 569          uint32_t RTC_GetCurrentTime(void)
+ 570          {
+ 571   1         SI_UU32_t current_time;
+ 572   1      
+ 573   1         RTC_write( RTC0CN, RTC_RTC0CNLocal | RTC0CAP);   // Write '1' to RTC0CAP
+ 574   1         while((RTC_read(RTC0CN) & RTC0CAP));          // Wait for RTC0CAP -> 0
+ 575   1      
+ 576   1         RTC0ADR = (0xD0 | CAPTURE0);
+ 577   1         NOP(); NOP(); NOP();
+ 578   1         current_time.u8[B0] = RTC0DAT;               // Least significant byte
+ 579   1         NOP(); NOP();
+ 580   1         current_time.u8[B1] = RTC0DAT;
+ 581   1         NOP(); NOP();
+ 582   1         current_time.u8[B2] = RTC0DAT;
+ 583   1         NOP(); NOP();
+ 584   1         current_time.u8[B3] = RTC0DAT;               // Most significant byte
+ 585   1      
+ 586   1         return current_time.u32;
+ 587   1      
+ 588   1      }
+ 589          
+ 590          //-----------------------------------------------------------------------------
+ 591          // RTC_SetCurrentTime()
+ 592          //-----------------------------------------------------------------------------
+ 593          //
+ 594          // Return Value : none
+ 595          // Parameters   :
+ 596          //
+ 597          // This function sets the current value of the SmaRTClock
+ 598          //
+ 599          // Instruction timing of multi-byte write with short bit set
+ 600          //
+ 601          //       mov      RTC0ADR, #010h
+ 602          //       mov      RTC0DAT, #05h
+ 603          //       nop
+ 604          //       mov      RTC0DAT, #06h
+ 605          //       nop
+ 606          //       mov      RTC0DAT, #07h
+ 607          //       nop
+ 608          //       mov      RTC0DAT, #08h
+ 609          //       nop
+ 610          
+ 611          //-----------------------------------------------------------------------------
+ 612          void RTC_SetCurrentTime(uint32_t time)
+ 613          {
+ 614   1         SI_UU32_t current_time;
+ 615   1      
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/20/2017 23:18:05 PAGE 11  
+
+ 616   1         current_time.u32 = time;
+ 617   1      
+ 618   1         // Write the time to the capture registers
+ 619   1         RTC0ADR = (0x10 | CAPTURE0);
+ 620   1         RTC0DAT = current_time.u8[B0];    // write data
+ 621   1         NOP();
+ 622   1         RTC0DAT = current_time.u8[B1];    // write data
+ 623   1         NOP();
+ 624   1         RTC0DAT = current_time.u8[B2];    // write data
+ 625   1         NOP();
+ 626   1         RTC0DAT = current_time.u8[B3];    // write data
+ 627   1         NOP();
+ 628   1      
+ 629   1         RTC_write( RTC0CN, RTC_RTC0CNLocal | RTC0SET);   // Write '1' to RTC0SET
+ 630   1         while((RTC_read(RTC0CN) & RTC0SET));          // Wait for RTC0SET -> 0
+ 631   1      
+ 632   1      }
+ 633          
+ 634          //-----------------------------------------------------------------------------
+ 635          // RTC0CN_setBits()
+ 636          //-----------------------------------------------------------------------------
+ 637          //
+ 638          // Return Value : none
+ 639          // Parameters   :
+ 640          //
+ 641          // This function sets bits in the RTC0CN register
+ 642          //-----------------------------------------------------------------------------
+ 643          void RTC0CN_setBits(uint8_t bits)
+ 644          {
+ 645   1         RTC_RTC0CNLocal |= (bits & ~0x03);
+ 646   1         RTC_write( RTC0CN, RTC_RTC0CNLocal | bits);
+ 647   1      }
+ 648          
+ 649          //-----------------------------------------------------------------------------
+ 650          // RTC0CN_clearBits()
+ 651          //-----------------------------------------------------------------------------
+ 652          //
+ 653          // Return Value : none
+ 654          // Parameters   :
+ 655          //
+ 656          // This function clears bits in the RTC0CN register
+ 657          //-----------------------------------------------------------------------------
+ 658          void RTC0CN_clearBits(uint8_t bits)
+ 659          {
+ 660   1         RTC_RTC0CNLocal &= bits;
+ 661   1         RTC_write( RTC0CN, RTC_RTC0CNLocal);
+ 662   1      }
+ 663          
+ 664          //-----------------------------------------------------------------------------
+ 665          // RTC_setAlarmPeriod ()
+ 666          //-----------------------------------------------------------------------------
+ 667          //
+ 668          // Return Value : None
+ 669          // Parameters   : alarm_frequency
+ 670          //
+ 671          // This function will set the RTC Alarm Interval to alarm_ms milliseconds
+ 672          //
+ 673          //-----------------------------------------------------------------------------
+ 674          void RTC_setAlarmPeriod(uint16_t alarm_frequency)
+ 675          {
+ 676   1      
+ 677   1         RTC_zeroCurrentTime();              // Reset the RTC Timer
+ 678   1         RTC_writeAlarm((RTCCLK * (uint32_t)alarm_frequency) / 1000L);
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/20/2017 23:18:05 PAGE 12  
+
+ 679   1      
+ 680   1      }
+ 681          
+ 682          void RTC_zeroCurrentTime(void)
+ 683          {
+ 684   1              // Write the time to the capture registers
+ 685   1              RTC0ADR = (0x10 | CAPTURE0);
+ 686   1              RTC0DAT = 0x00;                   // write data
+ 687   1              NOP();
+ 688   1              RTC0DAT = 0x00;                   // write data
+ 689   1              NOP();
+ 690   1              RTC0DAT = 0x00;                   // write data
+ 691   1              NOP();
+ 692   1              RTC0DAT = 0x00;                   // write data
+ 693   1              NOP();
+ 694   1      
+ 695   1              RTC_write( RTC0CN, RTC_RTC0CNLocal | RTC0SET);   // Write '1' to RTC0SET
+ 696   1              while((RTC_read(RTC0CN) & RTC0SET));          // Wait for RTC0SET -> 0
+ 697   1      }
+ 698          /*
+ 699          
+ 700          
+ 701          
+ 702          //-----------------------------------------------------------------------------
+ 703          // Low level RTC and LPM control
+ 704          //-----------------------------------------------------------------------------
+ 705          
+ 706          
+ 707          
+ 708          //-----------------------------------------------------------------------------
+ 709          // RTC_init ()
+ 710          //-----------------------------------------------------------------------------
+ 711          //
+ 712          // Return Value : None
+ 713          // Parameters   : None
+ 714          //
+ 715          // This function will initialize the smaRTClock.
+ 716          //
+ 717          //-----------------------------------------------------------------------------
+ 718          void RTC_init (void)
+ 719          {
+ 720          
+ 721             static unsigned char RTC_Configured = 0;
+ 722             uint16_t i;
+ 723          
+ 724             uint8_t CLKSEL_SAVE = CLKSEL;
+ 725          
+ 726             // If the interface is locked
+ 727             if(RTC0KEY == 0x00)
+ 728             {
+ 729                RTC0KEY = 0xA5;                  // Unlock the smaRTClock interface
+ 730                RTC0KEY = 0xF1;
+ 731             }
+ 732          
+ 733             //----------------------------------------
+ 734             // Configure the SmaRTClock to crystal
+ 735             // or self-oscillate mode
+ 736             //----------------------------------------
+ 737          
+ 738             #if(RTC_CLKSRC == CRYSTAL)
+ 739          
+ 740                RTC_write (RTC0XCN, 0x60);       // Configure the smaRTClock
+ 741                                                 // oscillator for crystal mode
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/20/2017 23:18:05 PAGE 13  
+
+ 742                                                 // Bias Doubling Enabled
+ 743                                                 // AGC Disabled
+ 744          
+ 745                RTC_write (RTC0XCF, 0x83);       // Enable Automatic Load Capacitance
+ 746                                                 // stepping and set the desired
+ 747                                                 // load capacitance to 4.5pF plus
+ 748                                                 // the stray PCB capacitance
+ 749          
+ 750             #elif(RTC_CLKSRC == SELFOSC)
+ 751          
+ 752                // Configure smaRTClock to self-oscillate mode with bias X2 disabled
+ 753                RTC_write (RTC0XCN, 0x00);
+ 754          
+ 755                // Disable Auto Load Cap Stepping
+ 756                RTC_write (RTC0XCF, (0x00 | LOADCAP_VALUE));
+ 757          
+ 758             #else
+ 759                #error "Must select crystal or self oscillate mode"
+ 760             #endif
+ 761          
+ 762             RTC_write (RTC0CN, 0x80);           // Enable smaRTClock oscillator
+ 763          
+ 764             CLKSEL    =  0x74;                  // Switch to 156 kHz low power
+ 765                                                 // internal oscillator
+ 766          
+ 767             //----------------------------------------
+ 768             // Wait for crystal to start
+ 769             // No need to wait in self-oscillate mode
+ 770             //----------------------------------------
+ 771          
+ 772             #if(RTC_CLKSRC == CRYSTAL)
+ 773          
+ 774                // Wait > 20 ms
+ 775                for (i=0x550; i!=0; i--);
+ 776          
+ 777                // Wait for smaRTClock valid
+ 778                while ((RTC_read (RTC0XCN) & 0x10)== 0x00);
+ 779          
+ 780                // Wait for Load Capacitance Ready
+ 781                while ((RTC_read (RTC0XCF) & 0x40)== 0x00);
+ 782          
+ 783                RTC_write (RTC0XCN, 0xC0);          // Enable Automatic Gain Control
+ 784                                                    // and disable bias doubling
+ 785          
+ 786             #endif
+ 787          
+ 788             RTC_write (RTC0CN, 0xC0);           // Enable missing smaRTClock detector
+ 789                                                 // and leave smaRTClock oscillator
+ 790                                                 // enabled.
+ 791          
+ 792             // Wait > 2 ms
+ 793             for (i=0x540; i!=0; i--);
+ 794          
+ 795             RTC_write (RTC0CN, 0xC0);           // Clear the clock fail flag (precautionary).
+ 796          
+ 797             PMU0CF = 0x20;                      // Clear PMU wake-up source flags
+ 798          
+ 799             CLKSEL = CLKSEL_SAVE;               // Restore system clock
+ 800             while(!(CLKSEL & 0x80));            // Poll CLKRDY
+ 801          
+ 802             RTC_RTC0CNLocal = 0xC0;                // Initialize Local Copy of RTC0CN
+ 803          
+ 804          
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/20/2017 23:18:05 PAGE 14  
+
+ 805          
+ 806             RTC_Configured = 1;
+ 807          }
+ 808          
+ 809          
+ 810          //-----------------------------------------------------------------------------
+ 811          // RTC_setAlarmPeriod ()
+ 812          //-----------------------------------------------------------------------------
+ 813          //
+ 814          // Return Value : None
+ 815          // Parameters   : alarm_frequency
+ 816          //
+ 817          // This function will set the RTC Alarm Interval to alarm_ms milliseconds
+ 818          //
+ 819          //-----------------------------------------------------------------------------
+ 820          void RTC_setAlarmPeriod(uint16_t alarm_frequency)
+ 821          {
+ 822          
+ 823             RTC_zeroCurrentTime();              // Reset the RTC Timer
+ 824             RTC_writeAlarm((RTCCLK * (uint32_t)alarm_frequency) / 1000L);
+ 825          
+ 826          }
+ 827          
+ 828          
+ 829          
+ 830          //-----------------------------------------------------------------------------
+ 831          // RTC_read ()
+ 832          //-----------------------------------------------------------------------------
+ 833          //
+ 834          // Return Value : RTC0DAT
+ 835          // Parameters   : 1) uint8_t reg - address of RTC register to read
+ 836          //
+ 837          // This function will read one byte from the specified RTC register.
+ 838          // Using a register number greater that 0x0F is not permited.
+ 839          //
+ 840          //  Timing of SmaRTClock register read with short bit set
+ 841          //
+ 842          //     mov      RTC0ADR, #094h
+ 843          //     nop
+ 844          //     nop
+ 845          //     nop
+ 846          //     mov      A, RTC0DAT
+ 847          //
+ 848          //-----------------------------------------------------------------------------
+ 849          
+ 850          uint8_t RTC_read (uint8_t reg)
+ 851          {
+ 852          
+ 853                  while (RTC0ADR & 0x80);                 // Poll to ensure the smartclk interface is free
+ 854                  RTC0ADR = (reg | 0x80);                         // write the read register and write 1 to BUSY bit (bit 7)
+ 855                  while (RTC0ADR & 0x80);                         // Poll for busy bit
+ 856          
+ 857             return RTC0DAT;                      // return value
+ 858          }
+ 859          
+ 860          
+ 861          //-----------------------------------------------------------------------------
+ 862          // RTC_write ()
+ 863          //-----------------------------------------------------------------------------
+ 864          //
+ 865          // Return Value : none
+ 866          // Parameters   : 1) uint8_t reg - address of RTC register to write
+ 867          //                2) uint8_t value - the value to write to <reg>
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/20/2017 23:18:05 PAGE 15  
+
+ 868          //
+ 869          // This function will Write one byte to the specified RTC register.
+ 870          // Using a register number greater that 0x0F is not permited.
+ 871          //
+ 872          // Timing of SmaRTClock register write with short bit set
+ 873          //
+ 874          //       mov      RTC0ADR, #014h
+ 875          //       mov      RTC0DAT, #088h
+ 876          //       nop
+ 877          //
+ 878          //-----------------------------------------------------------------------------
+ 879          
+ 880          void RTC_write (uint8_t reg, uint8_t value)
+ 881          {
+ 882          
+ 883          
+ 884                  while (RTC0ADR & 0x80);                 // Poll busy bit to ensure the smartclk interface is free
+ 885             RTC0ADR = reg;                                                               //write to address
+ 886                  RTC0DAT = value;                                                        // Write data
+ 887                  while (RTC0ADR & 0x80);                         // Poll for busy bit
+ 888          
+ 889          }
+ 890          
+ 891          //-----------------------------------------------------------------------------
+ 892          // RTC_writeAlarm ()
+ 893          //-----------------------------------------------------------------------------
+ 894          //
+ 895          // Return Value : none
+ 896          // Parameters   : 1) uint32_t alarm - the value to write to <ALARM>
+ 897          //
+ 898          // This function writes a value to the <ALRM> registers
+ 899          //
+ 900          // Instruction timing of multi-byte write with short bit set
+ 901          //
+ 902          //       mov      RTC0ADR, #010h
+ 903          //       mov      RTC0DAT, #05h
+ 904          //       nop
+ 905          //       mov      RTC0DAT, #06h
+ 906          //       nop
+ 907          //       mov      RTC0DAT, #07h
+ 908          //       nop
+ 909          //       mov      RTC0DAT, #08h
+ 910          //       nop
+ 911          //
+ 912          //-----------------------------------------------------------------------------
+ 913          
+ 914          void RTC_writeAlarm (uint32_t alarm)
+ 915          {
+ 916             SI_SEGMENT_VARIABLE(alarm_value, SI_UU32_t, SI_SEG_IDATA);
+ 917          
+ 918             alarm_value.u32 = alarm;
+ 919             //alarm_local = alarm;
+ 920          
+ 921             // Temporarily disable alarm while updating registers
+ 922             RTC0ADR = (0x10 | RTC0CN);
+ 923             RTC0DAT = (RTC_RTC0CNLocal & ~RTC0AEN);
+ 924             while (RTC0ADR & 0x80);                                               // poll for busy bit -> 0
+ 925          
+ 926             // Write the value to the alarm registers
+ 927             RTC0ADR = (0x10 | ALARM0);
+ 928             RTC0DAT = alarm_value.u8[B0];    // write data
+ 929             while (RTC0ADR & 0x80);                                               // poll for busy bit -> 0
+ 930             RTC0DAT = alarm_value.u8[B1];    // write data
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/20/2017 23:18:05 PAGE 16  
+
+ 931             while (RTC0ADR & 0x80);                                               // poll for busy bit -> 0
+ 932             RTC0DAT = alarm_value.u8[B2];    // write data
+ 933             while (RTC0ADR & 0x80);                                       // poll for busy bit -> 0
+ 934             RTC0DAT = alarm_value.u8[B3];    // write data
+ 935             while (RTC0ADR & 0x80);                                               // poll for busy bit -> 0
+ 936          
+ 937             // Restore alarm state after registers have been written
+ 938             RTC0ADR = (0x10 | RTC0CN);
+ 939             RTC0DAT = RTC_RTC0CNLocal;
+ 940          
+ 941          }
+ 942          
+ 943          
+ 944          //-----------------------------------------------------------------------------
+ 945          // RTC0CN_setBits()
+ 946          //-----------------------------------------------------------------------------
+ 947          //
+ 948          // Return Value : none
+ 949          // Parameters   :
+ 950          //
+ 951          // This function sets bits in the RTC0CN register
+ 952          //-----------------------------------------------------------------------------
+ 953          void RTC0CN_setBits(uint8_t bits)
+ 954          {
+ 955             RTC_RTC0CNLocal |= (bits & ~0x03);
+ 956             RTC_write( RTC0CN, RTC_RTC0CNLocal | bits);
+ 957          }
+ 958          
+ 959          //-----------------------------------------------------------------------------
+ 960          // RTC0CN_clearBits()
+ 961          //-----------------------------------------------------------------------------
+ 962          //
+ 963          // Return Value : none
+ 964          // Parameters   :
+ 965          //
+ 966          // This function clears bits in the RTC0CN register
+ 967          //-----------------------------------------------------------------------------
+ 968          void RTC0CN_clearBits(uint8_t bits)
+ 969          {
+ 970             RTC_RTC0CNLocal &= bits;
+ 971             RTC_write( RTC0CN, RTC_RTC0CNLocal);
+ 972          }
+ 973          
+ 974          //-----------------------------------------------------------------------------
+ 975          // LPM_init ()
+ 976          //-----------------------------------------------------------------------------
+ 977          //
+ 978          // Return Value : None
+ 979          // Parameters   : None
+ 980          //
+ 981          // This function will initialize the low power functionality
+ 982          //
+ 983          //-----------------------------------------------------------------------------
+ 984          void LPM_init (void)
+ 985          {
+ 986            PMU0CFconfig(CLEAR);
+ 987            PMU_PMU0CFLocal = 0;
+ 988            RTC_alarm = 0;
+ 989            RTC_failure = 0;
+ 990            Comp_wakeup = 0;
+ 991            PM_wakeup = 0;
+ 992          }
+ 993          
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/20/2017 23:18:05 PAGE 17  
+
+ 994          
+ 995          //-----------------------------------------------------------------------------
+ 996          // LPM_enableWakeup ()
+ 997          //-----------------------------------------------------------------------------
+ 998          //
+ 999          // Return Value : None
+1000          // Parameters   : None
+1001          //
+1002          // This function will enable wakeup sources
+1003          //
+1004          //-----------------------------------------------------------------------------
+1005          void LPM_enableWakeup (uint8_t wakeup)
+1006          {
+1007            PMU_PMU0CFLocal |= (wakeup & (RTC | PORT_MATCH | COMPARATOR));
+1008          }
+1009          
+1010          //-----------------------------------------------------------------------------
+1011          // LPM_disableWakeup ()
+1012          //-----------------------------------------------------------------------------
+1013          //
+1014          // Return Value : None
+1015          // Parameters   : None
+1016          //
+1017          // This function will disable wakeup sources
+1018          //
+1019          //-----------------------------------------------------------------------------
+1020          void LPM_disableWakeup (uint8_t wakeup)
+1021          {
+1022            PMU_PMU0CFLocal &= ~(wakeup & (RTC | PORT_MATCH | COMPARATOR));
+1023          }
+1024          
+1025          //-----------------------------------------------------------------------------
+1026          // RTC_zeroCurrentTime()
+1027          //-----------------------------------------------------------------------------
+1028          //
+1029          // Return Value : none
+1030          // Parameters   :
+1031          //
+1032          // This function sets the current value of the SmaRTClock
+1033          //
+1034          // Instruction timing of multi-byte write with short bit set
+1035          //
+1036          //       mov      RTC0ADR, #010h
+1037          //       mov      RTC0DAT, #05h
+1038          //       nop
+1039          //       mov      RTC0DAT, #06h
+1040          //       nop
+1041          //       mov      RTC0DAT, #07h
+1042          //       nop
+1043          //       mov      RTC0DAT, #08h
+1044          //       nop
+1045          
+1046          //-----------------------------------------------------------------------------
+1047          void RTC_zeroCurrentTime(void)
+1048          {
+1049             // Write the time to the capture registers
+1050             RTC0ADR = (0x10 | CAPTURE0);
+1051             RTC0DAT = 0x00;                   // write data
+1052             NOP();
+1053             RTC0DAT = 0x00;                   // write data
+1054             NOP();
+1055             RTC0DAT = 0x00;                   // write data
+1056             NOP();
+C51 COMPILER V9.53.0.0   LOW_POWER_CONFIG                                                  07/20/2017 23:18:05 PAGE 18  
+
+1057             RTC0DAT = 0x00;                   // write data
+1058             NOP();
+1059          
+1060             RTC_write( RTC0CN, RTC_RTC0CNLocal | RTC0SET);   // Write '1' to RTC0SET
+1061             while((RTC_read(RTC0CN) & RTC0SET));          // Wait for RTC0SET -> 0
+1062          }
+1063          
+1064          */
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    590    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      7    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      7      15
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

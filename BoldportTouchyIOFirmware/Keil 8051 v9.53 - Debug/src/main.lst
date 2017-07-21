@@ -1,0 +1,142 @@
+C51 COMPILER V9.53.0.0   MAIN                                                              07/20/2017 23:18:03 PAGE 1   
+
+
+C51 COMPILER V9.53.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\src\main.OBJ
+COMPILER INVOKED BY: c:\SiliconLabs\SimplicityStudio\v4\developer\toolchains\keil_8051\9.53\BIN\C51.exe C:\Users\kburzin
+                    -ski\SimplicityStudio\v4_workspace\BoldportTouchyIOFirmware\src\main.c OMF2 SMALL DEBUG OBJECTEXTEND ROM(LARGE) WARNINGLE
+                    -VEL(2) FLOATFUZZY(3) OPTIMIZE(8,SPEED) DEFINE(DEBUG=1) INTVECTOR(0X0000) INTPROMOTE INCDIR(C:\Users\kburzinski\Simplicit
+                    -yStudio\v4_workspace\BoldportTouchyIOFirmware\inc\config;C:/Users/kburzinski/SimplicityStudio/v4_workspace/BoldportTouch
+                    -yIOFirmware/inc;C:/SiliconLabs/SimplicityStudio/v4/developer/sdks/8051/v4.0.4//Device/shared/si8051base;C:/SiliconLabs/S
+                    -implicityStudio/v4/developer/sdks/8051/v4.0.4//Device/EFM8SB1/inc;C:/SiliconLabs/SimplicityStudio/v4/developer/sdks/8051
+                    -/v4.0.4//Lib/efm8_capsense;C:/SiliconLabs/SimplicityStudio/v4/developer/sdks/8051/v4.0.4//Device/EFM8SB1/efm8_capsense/d
+                    -evice_layer) PRINT(.\src\main.lst) COND PAGEWIDTH(120) PAGELENGTH(65) OBJECT(.\src\main.OBJ)
+
+line level    source
+
+   1          /**
+   2           * @file main.c
+   3           * @author Keith Burzinski kbx81x@gmail.com @kbx81
+   4           * @date 2017-07-08
+   5           */
+   6          #include "main.h"
+   7          #include "touchy.h"
+   8          #include "stdlib.h"
+   9          
+  10          // $[Generated Includes]
+  11          #include "cslib_config.h"
+  12          #include "cslib.h"
+  13          // [Generated Includes]$
+  14          
+  15          /**
+  16           * MUX_VALUE_ARRAY In inc/config/cslib_hwconfig.h should be set to this when updating the configurator
+  17           */
+  18          // #define MUX_VALUE_ARRAY 0x0A, 0x0B, 0x0C, 0x02, 0x01, 0x09, 0x03, 0x06, 0x0D,
+  19          
+  20          
+  21          /**
+  22           * Global variables ...yeah, I know...I know...
+  23           */
+  24          uint8_t flags = SOF | RXERROR, rxBuffer[UART_BUFFERSIZE], txBuffer[UART_BUFFERSIZE];
+  25          volatile bool rxBufferReady = false, txReady = true;
+  26          
+  27          /**
+  28           * @brief main program
+  29           */
+  30          int main(void) {
+  31   1              uint16_t angle = 0;
+  32   1      
+  33   1              // call hardware initialization routine
+  34   1              enter_DefaultMode_from_RESET();
+  35   1              Tick_Init();
+  36   1      
+  37   1              // nifty little start-up blink-the-LEDs thing...so you can know it's alive
+  38   1              TouchyLEDOn(LED1 | LED2 | LED3 | LED4 | LED5 | LED6);
+  39   1              SimpleDelay(8000);
+  40   1              TouchyLEDOff(LED1 | LED2 | LED3 | LED4 | LED5 | LED6);
+  41   1      
+  42   1              // main application loop
+  43   1              while (1) {
+  44   2      // $[Generated Run-time code]
+  45   2                      // -----------------------------------------------------------------------------
+  46   2                      // If low power features are enabled, this will either put the device into a low
+  47   2                      // power state until it is time to take another scan, or put the device into a
+  48   2                      // low-power sleep mode if no touches are active
+  49   2                      // -----------------------------------------------------------------------------
+C51 COMPILER V9.53.0.0   MAIN                                                              07/20/2017 23:18:03 PAGE 2   
+
+  50   2                      CSLIB_lowPowerUpdate();
+  51   2      
+  52   2                      // -----------------------------------------------------------------------------
+  53   2                      // Performs all scanning and data structure updates
+  54   2                      // -----------------------------------------------------------------------------
+  55   2                      CSLIB_update();
+  56   2      
+  57   2      // [Generated Run-time code]$
+  58   2                      TouchyButtonRefresh();
+  59   2      #if DEF_SLEEP_MODE_ENABLE==1
+                              if (TouchySleepNow()) {
+                                      TouchySleepLEDs();
+                              }
+                              else {
+              #endif
+  65   2                              if (txReady && (TouchyReadSliderRelative() || TouchyGetChangedButtons() || (flags & (TXERROR | RXERROR)
+             -))) {
+  66   3                                      angle = TouchyReadSlider();
+  67   3                                      txBuffer[3] = angle & 0xff;             // low byte
+  68   3                                      txBuffer[2] = angle >> 8;               // high byte (well...bit...in this case...)
+  69   3                                      txBuffer[1] = TouchyReadButtons();
+  70   3                                      txBuffer[0] = SOF | flags;
+  71   3                                      txReady = false;
+  72   3                                      flags &= ~(RXERROR | TXERROR);  // clear the XXERROR bit(s) now that the state is buffered
+  73   3                                      SCON0_TI = 1;           // Set transmit flag to 1 to begin transmission
+  74   3                                      SimpleDelay(90);        // wait...because...I don't know why but everything breaks if we don't :smh:
+  75   3                              }
+  76   2      
+  77   2                              if (rxBufferReady) {
+  78   3                                      TouchySetLEDs(rxBuffer[1]);
+  79   3      
+  80   3                                      if (rxBuffer[0] & LED1) {
+  81   4                                              TouchySetLEDIntensity(LED1, rxBuffer[2]);
+  82   4                                      }
+  83   3      
+  84   3                                      if (rxBuffer[0] & LED6) {
+  85   4                                              TouchySetLEDIntensity(LED6, rxBuffer[3]);
+  86   4                                      }
+  87   3                              }
+  88   2      #if DEF_SLEEP_MODE_ENABLE==1
+                              }
+              #endif
+  91   2              }
+  92   1      }
+  93          
+  94          
+  95          // Create a simple delay
+  96          void SimpleDelay(uint32_t delayLen)
+  97          {
+  98   1              volatile uint32_t i = 0;
+  99   1      
+ 100   1              for (i = 0; i < delayLen; i++)
+ 101   1              {
+ 102   2              }
+ 103   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    215    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      9      10
+C51 COMPILER V9.53.0.0   MAIN                                                              07/20/2017 23:18:03 PAGE 3   
+
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      2    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,107 @@
+C51 COMPILER V9.53.0.0   TICK                                                              07/20/2017 23:18:03 PAGE 1   
+
+
+C51 COMPILER V9.53.0.0, COMPILATION OF MODULE TICK
+OBJECT MODULE PLACED IN .\src\tick.OBJ
+COMPILER INVOKED BY: c:\SiliconLabs\SimplicityStudio\v4\developer\toolchains\keil_8051\9.53\BIN\C51.exe C:\Users\kburzin
+                    -ski\SimplicityStudio\v4_workspace\BoldportTouchyIOFirmware\src\tick.c OMF2 SMALL DEBUG OBJECTEXTEND ROM(LARGE) WARNINGLE
+                    -VEL(2) FLOATFUZZY(3) OPTIMIZE(8,SPEED) DEFINE(DEBUG=1) INTVECTOR(0X0000) INTPROMOTE INCDIR(C:\Users\kburzinski\Simplicit
+                    -yStudio\v4_workspace\BoldportTouchyIOFirmware\inc\config;C:/Users/kburzinski/SimplicityStudio/v4_workspace/BoldportTouch
+                    -yIOFirmware/inc;C:/SiliconLabs/SimplicityStudio/v4/developer/sdks/8051/v4.0.4//Device/shared/si8051base;C:/SiliconLabs/S
+                    -implicityStudio/v4/developer/sdks/8051/v4.0.4//Device/EFM8SB1/inc;C:/SiliconLabs/SimplicityStudio/v4/developer/sdks/8051
+                    -/v4.0.4//Lib/efm8_capsense;C:/SiliconLabs/SimplicityStudio/v4/developer/sdks/8051/v4.0.4//Device/EFM8SB1/efm8_capsense/d
+                    -evice_layer) PRINT(.\src\tick.lst) COND PAGEWIDTH(120) PAGELENGTH(65) OBJECT(.\src\tick.OBJ)
+
+line level    source
+
+   1          /**
+   2           * @file tick.c
+   3           * @author Ronald Sousa www.hashDefineElectronics.com
+   4           * @date 13 Sep 2016
+   5           */
+   6          #include "main.h"
+   7          
+   8          /**
+   9           * holds the current tick valus since the micro powered up
+  10           */
+  11          static uint16_t Ticks = 0;
+  12          
+  13          /**
+  14           * @brief Return the system up time in millisecond
+  15           *
+  16           * @return  Number of milliseconds since system start.
+  17           */
+  18          static uint16_t Tick_GetCount(void) {
+  19   1          uint16_t ticks;
+  20   1      
+  21   1          // Disable Timer 3 interrupts
+  22   1          EIE1 &= ~EIE1_ET3__BMASK;
+  23   1      
+  24   1          ticks = Ticks;
+  25   1      
+  26   1          // Enable Timer 3 interrupts
+  27   1          EIE1 |= EIE1_ET3__BMASK;
+  28   1      
+  29   1          return ticks;
+  30   1      }
+  31          
+  32          /**
+  33           * @brief Wait the specified number of milliseconds
+  34           *
+  35           * @param ms The number of milliseconds to wait
+  36           *
+  37           * @note this function is a blocking type
+  38           */
+  39          void Tick_Wait(uint16_t ms) {
+  40   1          uint16_t ticks = Tick_GetCount();
+  41   1      
+  42   1          while ((Tick_GetCount() - ticks) < ms);
+  43   1      }
+  44          
+  45          /**
+  46           * @brief configure the timers and interrupt to generate the
+  47           * tick value as 1ms interval
+  48           */
+  49          void Tick_Init(void) {
+C51 COMPILER V9.53.0.0   TICK                                                              07/20/2017 23:18:03 PAGE 2   
+
+  50   1              uint8_t TMR3CN0_TR3_save;
+  51   1              TMR3CN0_TR3_save = TMR3CN0 & TMR3CN0_TR3__BMASK;
+  52   1              TMR3CN0 &= ~(TMR3CN0_TR3__BMASK);
+  53   1              TMR3H = (0xF9 << TMR3H_TMR3H__SHIFT);
+  54   1              TMR3L = (0x7D << TMR3L_TMR3L__SHIFT);
+  55   1              TMR3RLH = (0xF9 << TMR3RLH_TMR3RLH__SHIFT);
+  56   1              TMR3RLL = (0x7D << TMR3RLL_TMR3RLL__SHIFT);
+  57   1              TMR3CN0 |= TMR3CN0_TR3__RUN;
+  58   1              TMR3CN0 |= TMR3CN0_TR3_save;
+  59   1      
+  60   1              EIE1 |= EIE1_ET3__ENABLED;
+  61   1      }
+  62          
+  63          /**
+  64           * @brief timer 3 interrupt
+  65           */
+  66          SI_INTERRUPT (TIMER3_ISR, TIMER3_IRQn) {
+  67   1          // Overflows every 1 ms
+  68   1          TMR3CN0 &= ~TMR3CN0_TF3H__BMASK;
+  69   1      
+  70   1          Ticks++;
+  71   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     87    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      2    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
