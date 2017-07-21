@@ -2,7 +2,7 @@
 
 First--and probably most importantly--the baud rate used is 115,200. Reading from and writing to (or receiving from and transmitting to, if you prefer) the Touchy device works as described below.
 
-_Please beware...sleeping has been disabled in the EFM8's capsense library in this firmware! If you're powering Touchy with the battery, be careful as it'll drain your battery much more quickly than in the other firmwares I have in this repository._
+_Please beware...sleeping has been disabled in the EFM8's capsense library in this firmware! If you're powering Touchy with the battery, be careful as it'll drain your battery much more quickly than the other firmwares I have in this repository._
 
 When writing/transmitting to Touchy with this firmware, always write four bytes as follows:
  - Byte 0:
