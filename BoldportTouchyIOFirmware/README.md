@@ -24,4 +24,4 @@ When reading/receiving from Touchy with this firmware, four bytes will be sent a
  - Byte 2: MSB of angle of circle slider...
  - Byte 3: LSB of angle of circle slider. Range of slider is 0 to 359 degrees.
 
-Note that, in the event of a receive error, Touchy will transmit a block of data (as described above) regardless of a change of state of the buttons/slider.
+Note that, in the event of a receive error, Touchy will transmit a block of data (as described above) regardless of a change of state of the buttons/slider. This is so that the host can determine that a communication error occurred.
