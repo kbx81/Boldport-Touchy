@@ -37,10 +37,16 @@ The projects and API found here were developed using Silabs Simplicity Studio ve
 This is where the compiled version of the projects are stored. These are provided purely for convenience for those who want to get the board working quickly and with as little hassle as possible.</li
 
 <li><b>BoldportTouchyAPIDemo</b><br />
-This directory contins the project files and source code of the program which demonstrates the API and tests the basic functionality of the Touchy board. It uses Silabs CapsenseCircleSlider example project as its template and the Touchy API integrates the template's functionality.</li>
+This directory contains the project files and source code of the program which demonstrates the API and tests the basic functionality of the Touchy board. It uses Silabs CapsenseCircleSlider example project as its template and the Touchy API integrates the template's functionality.</li>
 
 <li><b>BoldportTouchyFidgetFirmware</b><br />
-This directory contins the project files and source code of the Fidget firmware application which is based on the Touchy API and capsense libraries.</li>
+This directory contains the project files and source code of the Fidget firmware application which is based on the Touchy API and capsense libraries.</li>
+
+<li><b>BoldportTouchyIOFirmware</b><br />
+This directory contains the project files and source code of the I/O firmware application which is based on the Touchy API and capsense libraries.</li>
+
+<li><b>BoldportTouchyIOFirmwareDemo</b><br />
+This directory contains an Arduino sketch which demonstrates how to communicate with the I/O firmware when installed on Touchy.</li>
 
 <li><b>Bootloader</b><br />
 Files/binaries to assist with loading the firmware image(s) onto the device.</li>
