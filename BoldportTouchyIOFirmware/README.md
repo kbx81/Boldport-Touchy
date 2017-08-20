@@ -13,6 +13,8 @@ When writing/transmitting to Touchy with this firmware, always write four bytes 
  - Byte 2: Intensity for LED 1; intensity is set only if bit 0 of byte 0 is set.
  - Byte 3: Intensity for LED 6; intensity is set only if bit 5 of byte 0 is set.
 
+All four bytes must be transmitted within about one-quarter (1/4 or .25) of a second or the receive operation will time out and the partially-received data packet will be discarded.
+
 Note that bytes 2 and 3 must be sent even if they are not used. Other bits not accounted for above are ignored.
 
 When reading/receiving from Touchy with this firmware, four bytes will be sent as follows:
