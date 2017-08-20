@@ -1,4 +1,4 @@
-C51 COMPILER V9.53.0.0   MAIN                                                              07/20/2017 23:18:03 PAGE 1   
+C51 COMPILER V9.53.0.0   MAIN                                                              08/20/2017 03:32:38 PAGE 1   
 
 
 C51 COMPILER V9.53.0.0, COMPILATION OF MODULE MAIN
@@ -37,7 +37,7 @@ line level    source
   21          /**
   22           * Global variables ...yeah, I know...I know...
   23           */
-  24          uint8_t flags = SOF | RXERROR, rxBuffer[UART_BUFFERSIZE], txBuffer[UART_BUFFERSIZE];
+  24          uint8_t flags = SOF | RXERROR, rxTimer = 0, rxBuffer[UART_BUFFERSIZE], txBuffer[UART_BUFFERSIZE];
   25          volatile bool rxBufferReady = false, txReady = true;
   26          
   27          /**
@@ -63,7 +63,7 @@ line level    source
   47   2                      // power state until it is time to take another scan, or put the device into a
   48   2                      // low-power sleep mode if no touches are active
   49   2                      // -----------------------------------------------------------------------------
-C51 COMPILER V9.53.0.0   MAIN                                                              07/20/2017 23:18:03 PAGE 2   
+C51 COMPILER V9.53.0.0   MAIN                                                              08/20/2017 03:32:38 PAGE 2   
 
   50   2                      CSLIB_lowPowerUpdate();
   51   2      
@@ -104,32 +104,36 @@ line level    source
   85   4                                              TouchySetLEDIntensity(LED6, rxBuffer[3]);
   86   4                                      }
   87   3                              }
-  88   2      #if DEF_SLEEP_MODE_ENABLE==1
+  88   2      
+  89   2                              if (rxTimer <= RX_TIMEOUT) {
+  90   3                                      rxTimer++;
+  91   3                              }
+  92   2      #if DEF_SLEEP_MODE_ENABLE==1
                               }
               #endif
-  91   2              }
-  92   1      }
-  93          
-  94          
-  95          // Create a simple delay
-  96          void SimpleDelay(uint32_t delayLen)
-  97          {
-  98   1              volatile uint32_t i = 0;
-  99   1      
- 100   1              for (i = 0; i < delayLen; i++)
- 101   1              {
- 102   2              }
- 103   1      }
+  95   2              }
+  96   1      }
+  97          
+  98          
+  99          // Create a simple delay
+ 100          void SimpleDelay(uint32_t delayLen)
+ 101          {
+ 102   1              volatile uint32_t i = 0;
+ 103   1      
+ 104   1              for (i = 0; i < delayLen; i++)
+ 105   1              {
+ 106   2              }
+ 107   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    215    ----
+   CODE SIZE        =    224    ----
+C51 COMPILER V9.53.0.0   MAIN                                                              08/20/2017 03:32:38 PAGE 3   
+
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
-   DATA SIZE        =      9      10
-C51 COMPILER V9.53.0.0   MAIN                                                              07/20/2017 23:18:03 PAGE 3   
-
+   DATA SIZE        =     10      10
    IDATA SIZE       =   ----    ----
    BIT SIZE         =      2    ----
    EDATA SIZE       =   ----    ----

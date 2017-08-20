@@ -1,4 +1,4 @@
-C51 COMPILER V9.53.0.0   TICK                                                              07/20/2017 23:18:03 PAGE 1   
+C51 COMPILER V9.53.0.0   TICK                                                              08/20/2017 03:32:40 PAGE 1   
 
 
 C51 COMPILER V9.53.0.0, COMPILATION OF MODULE TICK
@@ -63,7 +63,7 @@ line level    source
   47           * tick value as 1ms interval
   48           */
   49          void Tick_Init(void) {
-C51 COMPILER V9.53.0.0   TICK                                                              07/20/2017 23:18:03 PAGE 2   
+C51 COMPILER V9.53.0.0   TICK                                                              08/20/2017 03:32:40 PAGE 2   
 
   50   1              uint8_t TMR3CN0_TR3_save;
   51   1              TMR3CN0_TR3_save = TMR3CN0 & TMR3CN0_TR3__BMASK;

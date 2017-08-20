@@ -1,0 +1,15 @@
+"./lib/cslib/application_layer/cslib_config.OBJ",
+"./lib/efm8sb1/cslib/device_layer/hardware_config.OBJ",
+"./lib/efm8sb1/cslib/device_layer/hardware_routines.OBJ",
+"./lib/efm8sb1/cslib/device_layer/low_power_config.OBJ",
+"./lib/efm8sb1/cslib/serial_interface/comm_routines.OBJ",
+"./lib/efm8sb1/cslib/serial_interface/profiler_interface.OBJ",
+"./lib/efm8sb1/cslib/serial_interface/sensor_descriptors.OBJ",
+"./src/InitDevice.OBJ",
+"./src/SILABS_STARTUP.OBJ",
+"./src/circle_slider.OBJ",
+"./src/main.OBJ",
+"./src/tick.OBJ",
+"./src/touchy.OBJ",
+"C:/SiliconLabs/SimplicityStudio/v4/developer/sdks/8051/v4.0.4/Lib/efm8_capsense/CSLIBRARY.LIB"
+TO "BOLDPORTTOUCHYFIDGETFIRMWARE.OMF.CRBUILD" REMOVEUNUSED PRINT(.\BoldportTouchyFidgetFirmware.m51) PAGEWIDTH (120) PAGELENGTH (65) CLASSES( CODE(C:0x0 - C:0x1ffe), CONST(C:0x0 - C:0x1ffe), ECODE(C:0x0 - C:0x1ffe), HCONST(C:0x0 - C:0x1ffe), XDATA(X:0x0 - X:0xff), HDATA(X:0x0 - X:0xff))

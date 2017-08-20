@@ -29,6 +29,10 @@ SI_INTERRUPT (UART0_ISR, UART0_IRQn)
 #endif
 
 	if (SCON0_RI == 1) {
+		if (rxTimer >= RX_TIMEOUT) {		// if the timeout was exceeded...
+			rxByteNumber = rxTimer = 0;		// ...start at the beginning
+		}
+
 		if (rxByteNumber < UART_BUFFERSIZE) {
 			newByte = SBUF0;	// get the byte we just received
 

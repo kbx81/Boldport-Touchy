@@ -21,7 +21,7 @@
 /**
  * Global variables ...yeah, I know...I know...
  */
-uint8_t flags = SOF | RXERROR, rxBuffer[UART_BUFFERSIZE], txBuffer[UART_BUFFERSIZE];
+uint8_t flags = SOF | RXERROR, rxTimer = 0, rxBuffer[UART_BUFFERSIZE], txBuffer[UART_BUFFERSIZE];
 volatile bool rxBufferReady = false, txReady = true;
 
 /**
@@ -84,6 +84,10 @@ int main(void) {
 				if (rxBuffer[0] & LED6) {
 					TouchySetLEDIntensity(LED6, rxBuffer[3]);
 				}
+			}
+
+			if (rxTimer <= RX_TIMEOUT) {
+				rxTimer++;
 			}
 #if DEF_SLEEP_MODE_ENABLE==1
 		}

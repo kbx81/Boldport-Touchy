@@ -1,4 +1,4 @@
-C51 COMPILER V9.53.0.0   INTERRUPTS                                                        07/20/2017 23:18:02 PAGE 1   
+C51 COMPILER V9.53.0.0   INTERRUPTS                                                        08/20/2017 03:32:37 PAGE 1   
 
 
 C51 COMPILER V9.53.0.0, COMPILATION OF MODULE INTERRUPTS
@@ -45,62 +45,66 @@ line level    source
               #endif
   30   1      
   31   1              if (SCON0_RI == 1) {
-  32   2                      if (rxByteNumber < UART_BUFFERSIZE) {
-  33   3                              newByte = SBUF0;        // get the byte we just received
-  34   3      
-  35   3                              SCON0_RI = 0;           // clear interrupt flag since we have the data now
-  36   3      
-  37   3                              rxBuffer[rxByteNumber] = newByte;       // write the received byte into the buffer
+  32   2                      if (rxTimer >= RX_TIMEOUT) {            // if the timeout was exceeded...
+  33   3                              rxByteNumber = rxTimer = 0;             // ...start at the beginning
+  34   3                      }
+  35   2      
+  36   2                      if (rxByteNumber < UART_BUFFERSIZE) {
+  37   3                              newByte = SBUF0;        // get the byte we just received
   38   3      
-  39   3                              rxByteNumber++;                         // increment our counter
+  39   3                              SCON0_RI = 0;           // clear interrupt flag since we have the data now
   40   3      
-  41   3                              rxBufferReady = false;          // buffer is not ready/complete at this point, unless...
+  41   3                              rxBuffer[rxByteNumber] = newByte;       // write the received byte into the buffer
   42   3      
-  43   3                              if (rxByteNumber >= UART_BUFFERSIZE) {
-  44   4                                      rxByteNumber = 0;               // ...reset it if it maxed out
-  45   4      
-  46   4                                      if (rxBuffer[0] & SOF) {
-  47   5                                              rxBufferReady = true;   // if SOF is valid, indicate that the buffer is now valid
-  48   5                                      }
-  49   4                                      else {
-C51 COMPILER V9.53.0.0   INTERRUPTS                                                        07/20/2017 23:18:02 PAGE 2   
+  43   3                              rxByteNumber++;                         // increment our counter
+  44   3      
+  45   3                              rxBufferReady = false;          // buffer is not ready/complete at this point, unless...
+  46   3      
+  47   3                              if (rxByteNumber >= UART_BUFFERSIZE) {
+  48   4                                      rxByteNumber = 0;               // ...reset it if it maxed out
+  49   4      
+C51 COMPILER V9.53.0.0   INTERRUPTS                                                        08/20/2017 03:32:37 PAGE 2   
 
-  50   5                                              flags |= RXERROR;               // indicate a receive error probably occurred
-  51   5                                      }
-  52   4      
-  53   4                                      if (rxBuffer[0] & TXERROR) {
-  54   5                                              flags |= TXERROR;               // set flag if the host indicated an error
+  50   4                                      if (rxBuffer[0] & SOF) {
+  51   5                                              rxBufferReady = true;   // if SOF is valid, indicate that the buffer is now valid
+  52   5                                      }
+  53   4                                      else {
+  54   5                                              flags |= RXERROR;               // indicate a receive error probably occurred
   55   5                                      }
-  56   4                              }
-  57   3                      }
-  58   2                      else {                                          // we should never end up here. just a safety thing...
-  59   3                              rxByteNumber = 0;
-  60   3                      }
-  61   2              }
-  62   1      
-  63   1              if (SCON0_TI == 1) {                    // check if transmit flag is set
-  64   2                      SCON0_TI = 0;                           // clear interrupt flag
-  65   2      
-  66   2                      if (txByteNumber < UART_BUFFERSIZE) {   // if there are more bytes to transmit...
-  67   3                              SBUF0 = txBuffer[txByteNumber];         // send the next byte
-  68   3      
-  69   3                              txByteNumber++;                 // update counter
-  70   3                      }
-  71   2                      else {
-  72   3                              txByteNumber = 0;               // Reset the counter
-  73   3      
-  74   3                              txReady = true;                 // Indicate transmission complete
-  75   3                      }
-  76   2              }
-  77   1      
-  78   1      #ifdef ACTIVITY_LED
+  56   4      
+  57   4                                      if (rxBuffer[0] & TXERROR) {
+  58   5                                              flags |= TXERROR;               // set flag if the host indicated an error
+  59   5                                      }
+  60   4                              }
+  61   3                      }
+  62   2                      else {                                          // we should never end up here. just a safety thing...
+  63   3                              rxByteNumber = 0;
+  64   3                      }
+  65   2              }
+  66   1      
+  67   1              if (SCON0_TI == 1) {                    // check if transmit flag is set
+  68   2                      SCON0_TI = 0;                           // clear interrupt flag
+  69   2      
+  70   2                      if (txByteNumber < UART_BUFFERSIZE) {   // if there are more bytes to transmit...
+  71   3                              SBUF0 = txBuffer[txByteNumber];         // send the next byte
+  72   3      
+  73   3                              txByteNumber++;                 // update counter
+  74   3                      }
+  75   2                      else {
+  76   3                              txByteNumber = 0;               // Reset the counter
+  77   3      
+  78   3                              txReady = true;                 // Indicate transmission complete
+  79   3                      }
+  80   2              }
+  81   1      
+  82   1      #ifdef ACTIVITY_LED
                       TouchyLEDOff(ACTIVITY_LED);
               #endif
-  81   1      }
+  85   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    109    ----
+   CODE SIZE        =    122    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----

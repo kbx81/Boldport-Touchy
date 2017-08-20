@@ -1,4 +1,4 @@
-C51 COMPILER V9.53.0.0   CIRCLE_SLIDER                                                     07/20/2017 23:18:03 PAGE 1   
+C51 COMPILER V9.53.0.0   CIRCLE_SLIDER                                                     08/20/2017 03:15:14 PAGE 1   
 
 
 C51 COMPILER V9.53.0.0, COMPILATION OF MODULE CIRCLE_SLIDER
@@ -63,7 +63,7 @@ line level    source
   46   2          // This helps reduce jumpiness when the touch
   47   2          // is being released due to non-linear capacitance
   48   2          // response
-C51 COMPILER V9.53.0.0   CIRCLE_SLIDER                                                     07/20/2017 23:18:03 PAGE 2   
+C51 COMPILER V9.53.0.0   CIRCLE_SLIDER                                                     08/20/2017 03:15:14 PAGE 2   
 
   49   2          if (touch_sum > MIN_SUM_TOUCH)
   50   2          {
@@ -128,7 +128,7 @@ line level    source
  108   2              // Binned weights by sensor position:
  109   2              // CS1:20 CS2:40
  110   2              //    CS0:60
-C51 COMPILER V9.53.0.0   CIRCLE_SLIDER                                                     07/20/2017 23:18:03 PAGE 3   
+C51 COMPILER V9.53.0.0   CIRCLE_SLIDER                                                     08/20/2017 03:15:14 PAGE 3   
 
  111   2              weights[0] = 60;
  112   2              weights[1] = 20;

@@ -1,4 +1,4 @@
-C51 COMPILER V9.53.0.0   TOUCHY                                                            07/20/2017 23:18:03 PAGE 1   
+C51 COMPILER V9.53.0.0   TOUCHY                                                            08/20/2017 03:15:15 PAGE 1   
 
 
 C51 COMPILER V9.53.0.0, COMPILATION OF MODULE TOUCHY
@@ -63,7 +63,7 @@ line level    source
   46   1      
   47   1      #ifdef DIMMER1
   48   1              intensity1 = 0;
-C51 COMPILER V9.53.0.0   TOUCHY                                                            07/20/2017 23:18:03 PAGE 2   
+C51 COMPILER V9.53.0.0   TOUCHY                                                            08/20/2017 03:15:15 PAGE 2   
 
   49   1      
   50   1              if (leds & LED1) {
@@ -128,7 +128,7 @@ line level    source
  109   1              // Make sure only existing LEDs are specified
  110   1              leds &= (1 << LED_COUNT) - 1;
  111   1      
-C51 COMPILER V9.53.0.0   TOUCHY                                                            07/20/2017 23:18:03 PAGE 3   
+C51 COMPILER V9.53.0.0   TOUCHY                                                            08/20/2017 03:15:15 PAGE 3   
 
  112   1              // Update the saved state of all LEDs with the requested changes
  113   1              ledState = (~ledState & leds) | (ledState & ~leds);
@@ -193,7 +193,7 @@ line level    source
  172          {
  173   1              uint8_t intensity = 0;
  174   1      
-C51 COMPILER V9.53.0.0   TOUCHY                                                            07/20/2017 23:18:03 PAGE 4   
+C51 COMPILER V9.53.0.0   TOUCHY                                                            08/20/2017 03:15:15 PAGE 4   
 
  175   1      #ifdef DIMMER1
  176   1              if (leds & LED1)
@@ -258,7 +258,7 @@ line level    source
  235   1      
  236   1              if (CSLIB_isSensorSingleActive(TS_B3)) {
  237   2                      buttonState |= BUTTON3;
-C51 COMPILER V9.53.0.0   TOUCHY                                                            07/20/2017 23:18:03 PAGE 5   
+C51 COMPILER V9.53.0.0   TOUCHY                                                            08/20/2017 03:15:15 PAGE 5   
 
  238   2              }
  239   1      
@@ -323,7 +323,7 @@ line level    source
  298          uint16_t TouchyReadSlider(void)
  299          {
  300   1              return angle;
-C51 COMPILER V9.53.0.0   TOUCHY                                                            07/20/2017 23:18:03 PAGE 6   
+C51 COMPILER V9.53.0.0   TOUCHY                                                            08/20/2017 03:15:15 PAGE 6   
 
  301   1      }
  302          

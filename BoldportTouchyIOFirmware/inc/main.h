@@ -16,13 +16,14 @@
 
 // #define ACTIVITY_LED	LED6
 #define UART_BUFFERSIZE	4
+#define RX_TIMEOUT		32
 
 // flag bits used...to indicate things
 #define RXERROR	0x20
 #define TXERROR	0x40
 #define SOF		0x80
 
-extern uint8_t flags, rxBuffer[], txBuffer[];
+extern uint8_t flags, rxTimer, rxBuffer[], txBuffer[];
 extern bool rxBufferReady, txReady;
 
 void SimpleDelay(uint32_t delayLen);
