@@ -16,6 +16,10 @@ The API Demo verion of the firmware adds quite a few capabilities over what the 
 
 Your Boldport Club Touchy kit will be your new favorite toy if you're one of those folks who just loves to fidget as you work/think/daydream/wander around aimlessly! Seriously, though...it just provides a few different ways to use the buttons and circular slider to manipulate the LEDs on the device. It's really just intended to make Touchy more enjoyable and fun after you've got it assembled. See the README file in the project folder which describes the operation of the device with this firmware installed. It's fun -- be sure to try it out!
 
+## What about the IO Firmware?
+
+The IO Firmware is intended to do nothing more than provide a simple interface for another device to "talk" with Touchy. It (more or less) does nothing on its own. Please see the README file in the IO Firmware's directory for more information on interfacing with it.
+
 ## Authors
 
 The board's orignal firmware was written by Ronald Sousa @Opticalworm - @HashDefineElec - www.hashdefineelectronics.com<br />
